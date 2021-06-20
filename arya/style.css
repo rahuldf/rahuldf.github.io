@@ -10,7 +10,7 @@ video {
     width: 100vw;
     height: 100vh;
     position: fixed;
-    opacity: .5;
+    opacity: .75;
     top: 0;
     left: 0;
     z-index: -5;
