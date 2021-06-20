@@ -5,6 +5,8 @@
     font-family: 'Montserrat', sans-serif;
 }
 
+@import url("style.css");
+
 video {
     object-fit: cover;
     width: 100vw;
