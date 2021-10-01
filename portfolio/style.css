@@ -134,3 +134,12 @@ a{
     border: solid 1px black;
     border-radius: 20px;
 }
+
+
+/* Mobile device */
+
+@media screen and (max-width:512px){
+    .card-grid{
+        grid-template-columns: 400px;
+    }
+}
