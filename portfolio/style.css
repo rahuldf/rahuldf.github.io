@@ -1,0 +1,136 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;  
+}
+
+/* body{
+    background-color: rgb(25, 25, 25);
+} */
+
+.portfolio-top{
+    width: 100vw;
+    height: 8vh;
+    background-image: linear-gradient(178deg, rgba(255, 0, 0, 0.25), rgba(0, 0, 255, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+.home-icon{
+    height: 3vh;
+    /* background-color: blue; */
+    position: absolute;
+    left: 10vw;
+}
+
+.home-icon img{
+    height: 100%;   
+}
+
+iframe{
+    border: none;
+    width: 100vw;
+    height: 90vh;
+}
+
+.card-grid{
+    display: grid;
+    grid-template-columns: 400px 400px;
+    grid-auto-rows: 280px;
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    justify-content: center;
+}
+
+.card{
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px gray;
+    overflow: hidden;
+    font-family: sans-serif;
+    position: relative;
+    background-color: white;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+}
+
+.card-image{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-image img{
+    width: 100%;
+    /* position: absolute; */
+    /* animation: image-scroll 10s linear infinite alternate; */
+}
+
+@keyframes image-scroll {
+    0%{
+        left:0%
+    }
+    100%{
+        left: -70%;
+    }
+}
+
+.card-title{
+    width: 100%;
+    height: 20%;
+    font-size: 150%;
+    font-weight: bold;
+    background-image: linear-gradient(180deg, rgba(255, 0, 0, 0.25), rgba(0, 0, 0, 0));
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(3px);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag-meta{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    bottom: 0%;
+}
+
+.tag-meta:hover{
+    opacity: 1;
+}
+
+.card-tags{
+    width: 100%;
+    padding: 5px;
+    background-image: linear-gradient(0deg, rgba(255, 0, 0, 0.25), rgba(0, 0, 0, 0));
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+}
+
+.card-tags p{
+    font-size: medium;
+    margin: 3px;
+    padding: 5px;
+    border: solid 1px black;
+    border-radius: 20px;
+}
