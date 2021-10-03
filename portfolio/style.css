@@ -19,20 +19,41 @@
     font-weight: bold;
 }
 
-.home-icon{
-    height: 2.5vh;
+.portfolio-home{
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    background-color: lightcoral;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    left: 10vw;
+    left: -60px;
+    bottom: 20px;
+    opacity: 1;
+    animation: image-scroll 4s ease 3s forwards;
+    box-shadow: 0px 0px 10px grey;
 }
 
-.home-icon img{
-    height: 100%;
+.portfolio-home:hover{
+    box-shadow: 0px 0px 10px black;
+}
+
+@keyframes image-scroll {
+    100%{
+        left: 10px;
+        opacity: 1;
+    }
+}
+
+.portfolio-home img{
+    width: 75%;
 }
 
 iframe{
     border: none;
     width: 100vw;
-    height: 90vh;
+    height: calc((92vh - 5px));
 }
 
 .card-grid{
@@ -48,7 +69,7 @@ iframe{
 
 .card{
     border-radius: 10px;
-    box-shadow: 0px 0px 10px gray;
+    box-shadow: 0px 0px 10px lightgray;
     overflow: hidden;
     font-family: sans-serif;
     position: relative;
@@ -74,15 +95,6 @@ a{
     width: 100%;
     /* position: absolute; */
     /* animation: image-scroll 10s linear infinite alternate; */
-}
-
-@keyframes image-scroll {
-    0%{
-        left:0%
-    }
-    100%{
-        left: -70%;
-    }
 }
 
 .card-title{
@@ -135,9 +147,9 @@ a{
 /* Mobile device */
 
 @media screen and (max-width:512px){
-    .home-icon{
-        height: 16px;
-        left: 1vw;
+    .portfolio-home{
+        width: 50px;
+        height: 50px;
     }
     
     .card-grid{
