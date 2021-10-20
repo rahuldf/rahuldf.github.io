@@ -56,6 +56,12 @@ iframe{
     height: calc((92vh - 5px));
 }
 
+embed{
+    border: none;
+    width: 100vw;
+    height: calc((92vh - 5px));
+}
+
 .card-grid{
     display: grid;
     grid-template-columns: 400px 400px;
