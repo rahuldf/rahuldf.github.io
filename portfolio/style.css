@@ -56,11 +56,11 @@ iframe{
     height: calc((92vh - 5px));
 }
 
-embed{
+/* embed{
     border: none;
     width: 100vw;
     height: calc((92vh - 5px));
-}
+} */
 
 .card-grid{
     display: grid;
@@ -165,4 +165,15 @@ a{
     .tag-meta{
         opacity: 1;
     }
+}
+
+
+
+/* for single pages */
+
+.thumb img{
+    position: fixed;
+    top: 0;
+    height: 10px;
+    z-index: -1;
 }
