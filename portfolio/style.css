@@ -40,9 +40,9 @@
 body {
 	background-color: #010409;
 	padding: 50px;
-	font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font: 16px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	color: #727272;
-	font-weight: 400
+	font-weight: 400;
 }
 
 h1 {
@@ -109,7 +109,7 @@ header {
 
 header img{
     border-radius: 10px;
-    box-shadow: 0px 0px 10px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0px 0px 25px 1px rgba(255, 255, 255, 0.1);
 }
 
 .proj_card{
@@ -121,6 +121,23 @@ header img{
     border-style: solid;
     border-width: 1px;
 	margin: 20px 0px 20px 0px;
+}
+
+.proj_card:hover{
+	box-shadow: 0px 0px 25px 1px rgba(255, 255, 255, 0.075);
+}
+
+.proj_badges{
+	display: inline-block;
+	/* margin: 20px 0px 20px 0px; */
+	/* margin-bottom: 20px; */
+	height: 24px;
+}
+
+.proj_badges img{
+	height: 100%;
+	border-radius: 3px;
+	cursor: pointer;
 }
 
 ul.downloads {
@@ -189,7 +206,7 @@ strong {
 }
 
 section {
-	width: 500px;
+	width: 540px;
 	float: right;
 	padding-bottom: 50px
 }
