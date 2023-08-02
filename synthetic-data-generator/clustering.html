@@ -1,0 +1,189 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+<style>
+
+*{
+    margin: 0%;
+    padding: 0%;
+    box-sizing: border-box;
+    font-family: arial,sans-serif;
+}
+
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+}
+
+.title{
+    width: 100%;
+    font-size: 32px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.left-container{
+    width: 20vw;
+    height: 100%;
+    padding: 10px;
+    background-color: aliceblue;
+}
+
+form{
+    width: 100%;
+    height: 50%;
+    min-height: max-content;
+    padding: 10px;
+    background-color: rgb(250, 250, 250);
+    border-radius: 10px;
+}
+
+label{
+    width: 100%;
+    display: block;
+    font-size: 18px;
+}
+
+input{
+    background-color: rgb(240, 240, 240);
+    border-radius: 4px;
+    font-size: 18px;
+    height: 32px;
+    width: 50%;
+    margin-bottom: 10px;
+}
+
+button {
+    text-decoration:none;
+    width: 200px;
+    background-color: rgb(220, 220, 220);
+    border: 1px solid rgb(220, 220, 220);
+    border-radius: 4px;
+    color: #3c4043;
+    font-family: arial,sans-serif;
+    font-size: 18px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button:hover{
+    border: 1px solid #adadad;
+}
+
+.right-container{
+    width: 20vw;
+    height: 100%;
+    padding: 10px;
+    background-color: aliceblue;
+}
+
+#graph-area{
+    width: 60vw;
+    height: 100%;
+    /* background-color: #3c4043; */
+}
+
+</style>
+  </head>
+  <body>
+    <div class="title">Clustering with Synthetic Data</div>
+    <div class="container">
+      <div class="left-container">
+        <form>
+            <label for="no_of_cluster">Number of clusters:</label>
+            <input type="number" id="no_of_cluster" placeholder="Number of clusters" value="4" step="1"/>
+            <br>
+            <label for="num_datapoints">Number of rows:</label>
+            <input type="number" id="num_datapoints" placeholder="Number of rows" value="150" step="1"/>
+            <br>
+            <label for="no_of_dimensions">Number of dimensions: (2 or 3)</label>
+            <input type="number" id="no_of_dimensions" placeholder="Number of dimensions" value="2" min="2" max="3" step="1"/>
+            <br>
+            <label for="overlap_percentage">Overlap Percentage:</label>
+            <input type="number" id="overlap_percentage" placeholder="Overlap Percentage" value="0" min="0" max="1" step=".01"/>
+            <br>
+            <label for="l">Linear combination:</label>
+            <input type="number" id="l" placeholder="Linear combination" value="1" min="1" max="10" step="1"/>
+            <br>
+            <button onclick="get_value()" py-click="generate_overlapping_clusters(js.no_of_cluster, js.no_of_dimensions, js.num_datapoints, js.overlap_percentage, js.l)" type="button">Generate Plot</button>
+        </form>
+      </div>
+  
+      
+      <div id="graph-area"></div>
+  
+      <div class="right-container"></div>
+    </div>
+    
+    <script>
+        var no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
+        var num_datapoints = parseInt(document.getElementById("num_datapoints").value);
+        var no_of_dimensions = parseInt(document.getElementById("no_of_dimensions").value);
+        var overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+        var l = parseInt(document.getElementById("l").value);
+    
+        function get_value() {
+            no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
+            num_datapoints = parseInt(document.getElementById("num_datapoints").value);
+            no_of_dimensions = parseInt(document.getElementById("no_of_dimensions").value);
+            overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+            l = parseInt(document.getElementById("l").value);
+        }
+    </script>
+
+    <py-config>
+      packages = ["numpy", "pandas", "matplotlib"]
+    </py-config>
+
+    <py-script>
+        import js
+        import numpy as np
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        
+        np.random.seed(42)
+        
+        def generate_overlapping_clusters(num_clusters, num_dimensions, num_datapoints, overlap_percentage, L):
+        
+            range_list = []
+        
+            for i in range(num_clusters*2):
+                if i == 0:
+                    range_list.append(np.random.uniform(0, L))
+                if i > 0 and i % 2 == 0:
+                    range_list.append(range_list[i-1] - L * (overlap_percentage ** (1 / num_dimensions)))
+                if i % 2 != 0:
+                    range_list.append(range_list[i-1] + L)
+        
+            print(range_list)
+            points_per_cluster = num_datapoints // num_clusters
+            col_dict = {}
+        
+            for dimension in range(0,num_dimensions):
+                col_data = np.array([])
+                for cluster in range(0,len(range_list),2):
+                    cluster_data = np.random.uniform(range_list[cluster], range_list[cluster+1], points_per_cluster)
+                    col_data = np.append(col_data,cluster_data)
+                    col_dict[f"Random Col {dimension+1}"] = col_data
+            
+        
+            df = pd.DataFrame(col_dict)
+            plt.scatter(df.iloc[:,0], df.iloc[:,1])
+            plt.title('Plot of Cluster Data')
+            Element('graph-area').clear()
+            display(plt, target="graph-area")
+            plt.clf()
+                
+
+    </py-script>
+
+  </body>
+</html>
