@@ -14,9 +14,8 @@
 
 .container{
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    height: 90vh;
 }
 
 .title{
@@ -40,16 +39,14 @@ form, .data-description{
     background-color: rgb(240, 240, 240);
     border-radius: 6px;
     box-shadow: 0px 0px 8px gray;
-}
-
-.data-description{
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 #data-description{
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
 h3{
@@ -65,17 +62,19 @@ table, th, td {
 }
 
 label{
-    width: 100%;
-    display: block;
+    width: 60%;
+    display: inline-block;
     font-size: 18px;
+    border-bottom: 1px solid lightgray;
 }
 
-input{
+input, select{
     background-color: white;
+    border: 1px solid;
     border-radius: 4px;
     font-size: 18px;
     height: 32px;
-    width: 50%;
+    width: 38%;
     margin-bottom: 10px;
 }
 
@@ -122,28 +121,43 @@ button:hover{
       <div class="left-container">
         <form>
             <h3>Data Generation Options</h3>
-            <label for="no_of_cluster">Number of clusters:</label>
-            <input type="number" id="no_of_cluster" placeholder="Number of clusters" value="4" step="1"/>
+            <label>Choose Distribution Type:</label>
+            <select id="distribution_type">
+                <option value="uniform">Uniform</option>
+                <option value="normal">Normal</option>
+                <option value="gaussian">Gaussian</option>
+                <option value="t">T</option>
+            </select>
+            <label>Number of Rows:</label>
+            <input type="number" id="num_datapoints" placeholder="Number of rows" value="100" min="3" step="1"/>
             <br>
-            <label for="num_datapoints">Number of rows:</label>
-            <input type="number" id="num_datapoints" placeholder="Number of rows" value="150" step="1"/>
-            <br>
-            <label for="no_of_dimensions">Number of dimensions: (2 or 3)</label>
+            <label>Number of Dimensions: (2 or 3)</label>
             <input type="number" id="no_of_dimensions" placeholder="Number of dimensions" value="2" min="2" max="3" step="1"/>
             <br>
-            <label for="overlap_percentage">Overlap Percentage:</label>
-            <input type="number" id="overlap_percentage" placeholder="Overlap Percentage" value="0" min="0" max="1" step=".01"/>
+            <label>Number of Clusters: (2 or 3)</label>
+            <input type="number" id="no_of_cluster" placeholder="Number of clusters" value="2" min="2" max="3" step="1"/>
             <br>
-            <label for="l">Linear combination:</label>
+            <label>Higher Limit of First Cluster:</label>
             <input type="number" id="l" placeholder="Linear combination" value="1" min="1" max="10" step="1"/>
             <br>
-            <button onclick="get_value()" py-click="generate_overlapping_clusters(js.no_of_cluster, js.no_of_dimensions, js.num_datapoints, js.overlap_percentage, js.l)" type="button">
+            <label>Overlap Percentage:</label>
+            <input type="number" id="overlap_percentage" placeholder="Overlap Percentage" value="0" min="0" max="1" step=".01"/>
+            <br>
+            <label>Imbalance Percentage:</label>
+            <input style="width: 18.5%;" type="number" id="imbalance_1" placeholder="C1" min="0" max=".5" step=".01"/>
+            <input style="width: 18.5%;" type="number" id="imbalance_2" placeholder="C2" min="0" max=".5" step=".01"/>
+            <br>
+
+
+
+
+            <button onclick="get_value()" py-click="generate_overlapping_clusters(js.no_of_cluster, js.no_of_dimensions, js.num_datapoints, js.overlap_percentage, js.l, [js.imbalance_1, js.imbalance_2], js.distribution_type)" type="button">
                 Generate Data
             </button>
         </form>
 
         <div class="data-description">
-          <h3>Data Description</h3>
+          <h3>Generated Data Description</h3>
           <div id="data-description">please generate data!</div>
         </div>
 
@@ -156,19 +170,54 @@ button:hover{
     </div>
     
     <script>
-        var no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
+        var distribution_type = document.getElementById("distribution_type").value;
         var num_datapoints = parseInt(document.getElementById("num_datapoints").value);
         var no_of_dimensions = parseInt(document.getElementById("no_of_dimensions").value);
-        var overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+        var no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
         var l = parseInt(document.getElementById("l").value);
+        var overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+        var imbalance_1 = parseFloat(document.getElementById("imbalance_1").value);
+        var imbalance_2 = parseFloat(document.getElementById("imbalance_2").value);
+
+
+        var data_description = document.getElementById("data-description");
+        
     
         function get_value() {
-            no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
+            distribution_type = document.getElementById("distribution_type").value;
             num_datapoints = parseInt(document.getElementById("num_datapoints").value);
+            
             no_of_dimensions = parseInt(document.getElementById("no_of_dimensions").value);
-            overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+            if(no_of_dimensions > 3) {no_of_dimensions = 3};
+
+            no_of_cluster = parseInt(document.getElementById("no_of_cluster").value);
+            if(no_of_cluster > 3) {no_of_cluster = 3};
+            
             l = parseInt(document.getElementById("l").value);
+            overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+            if(overlap_percentage > 1) {overlap_percentage = 1};
+            
+            imbalance_1 = parseFloat(document.getElementById("imbalance_1").value);
+            if(isNaN(imbalance_1) || imbalance_1 > .5){
+                if(no_of_cluster == 2){imbalance_1 = .5}
+                if(no_of_cluster == 3){imbalance_1 = .3333}
+            }
+
+            imbalance_2 = parseFloat(document.getElementById("imbalance_2").value);
+            if(isNaN(imbalance_2) || imbalance_2 > .5){
+                if(no_of_cluster == 2){imbalance_2 = .5}
+                if(no_of_cluster == 3){imbalance_2 = .3333}
+            }
+
+            
+            
+            
+            setTimeout(() => {
+                //data_description.innerHTML += "<a href = \"pyscript.interpreter.globals.get('x')\" download = \"file_name.csv\"><button>Download Data</button></a>"
+            }, 100);
         }
+
+
     </script>
 
     <py-config>
@@ -177,16 +226,16 @@ button:hover{
 
     <py-script>
         import js
+        from pyodide.ffi import create_proxy
         import numpy as np
         import pandas as pd
         import matplotlib.pyplot as plt
         
         np.random.seed(42)
         
-        def generate_overlapping_clusters(num_clusters, num_dimensions, num_datapoints, overlap_percentage, L):
-        
+        def generate_overlapping_clusters(num_clusters, num_dimensions, num_datapoints, overlap_percentage, L, cluster_percentage_list, distribution_type):
             range_list = []
-        
+
             for i in range(num_clusters*2):
                 if i == 0:
                     range_list.append(np.random.uniform(0, L))
@@ -195,46 +244,72 @@ button:hover{
                 if i % 2 != 0:
                     range_list.append(range_list[i-1] + L)
         
-            
-            points_per_cluster = num_datapoints // num_clusters
+            if len(cluster_percentage_list) < num_clusters:
+                remaining_percentage = 1 - np.sum(cluster_percentage_list)
+                cluster_percentage_list.append(remaining_percentage)
+        
+            total_points = num_datapoints
+            total_points_per_cluster = np.round(total_points * np.array(cluster_percentage_list), decimals=0)
+            total_points_assigned = np.sum(total_points_per_cluster)
+            total_points_per_cluster[-1] += total_points - total_points_assigned
             col_dict = {}
         
-            for dimension in range(0,num_dimensions):
-                col_data = np.array([])
-                for cluster in range(0,len(range_list),2):
-                    cluster_data = np.random.uniform(range_list[cluster], range_list[cluster+1], points_per_cluster)
-                    col_data = np.append(col_data,cluster_data)
-                    col_dict[f"Random Col {dimension+1}"] = col_data
-            
+            cluster_indices_per_cluster = []  # List to store cluster index for each data point within a cluster
+        
+            for cluster in range(num_clusters):
+                points_per_cluster = int(total_points_per_cluster[cluster])
+        
+                if distribution_type == "uniform":
+                    cluster_data = np.random.uniform(range_list[cluster*2], range_list[cluster*2 + 1], (points_per_cluster, num_dimensions))
+                elif distribution_type == "normal":
+                    cluster_data = np.random.normal((range_list[cluster*2] + range_list[cluster*2 + 1]) / 2, (range_list[cluster*2 + 1] - range_list[cluster*2]) / 4, (points_per_cluster, num_dimensions))
+                elif distribution_type == "gaussian":
+                    cluster_data = np.random.standard_normal((points_per_cluster, num_dimensions))
+                elif distribution_type == "t":
+                    cluster_data = np.random.standard_t(3, (points_per_cluster, num_dimensions))
+        
+                cluster_indices_per_cluster.extend([f'C{cluster+1}'] * points_per_cluster)
+        
+                for dimension in range(num_dimensions):
+                    col_name = f"Dimension {dimension+1}"
+                    if col_name not in col_dict:
+                        col_dict[col_name] = []
+                    col_dict[col_name].extend(cluster_data[:, dimension])
         
             global df
             df = pd.DataFrame(col_dict)
-
-
+            df['Cluster'] = cluster_indices_per_cluster
+            
             # Plot
             
             Element('graph-area').clear()            
             
             
             if(num_dimensions == 2):
-                plt.scatter(df.iloc[:,0], df.iloc[:,1])
-                plt.title('Plot of Cluster Data')
+                plt.scatter(df['Dimension 1'], df['Dimension 2'], c=df['Cluster'])
+                plt.xlabel('Dimension 1')
+                plt.ylabel('Dimension 2')
+                plt.title('Plot of Generated Data')
                 display(plt, target="graph-area")
                 plt.clf()
             
             if(num_dimensions == 3):
                 ax = plt.axes(projection ="3d")
-                ax.scatter3D(df.iloc[:,0], df.iloc[:,1], df.iloc[:,2])
-                plt.title('Plot of Cluster Data')
+                ax.scatter3D(df['Dimension 1'], df['Dimension 2'], df['Dimension 3'],  c=df['Cluster'])
+                ax.set_xlabel('Dimension 1')
+                ax.set_ylabel('Dimension 2')
+                ax.set_zlabel('Dimension 3')
+                plt.title('Plot of Generated Data')
                 display(plt, target="graph-area")
                 plt.clf()
         
 
             # display description on page
             description_div = Element("data-description")
-            description_div.element.innerHTML = df.describe().to_html()
-
-                
+            description_div.element.innerHTML = df.groupby('Cluster').describe().T.to_html()    
+        
+        def download_data():
+            df.to_csv("cluster_data.csv")     
 
     </py-script>
 
