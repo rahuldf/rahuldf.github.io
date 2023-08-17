@@ -26,8 +26,9 @@
     background-color: aliceblue;
 }
 
-.left-container{
+.left-container, .right-container{
     width: 25vw;
+    min-height: 99vh;
     height: 100%;
     padding: 10px;
     background-color: aliceblue;
@@ -42,7 +43,7 @@ form, .data-description{
     margin-bottom: 20px;
 }
 
-#data-description{
+#data_description, #cluster_description{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,6 +54,10 @@ h3{
   width: 100%;
   text-align: center;
   padding-bottom: 6px;
+}
+
+table{
+    width: 100%;
 }
 
 table, th, td {
@@ -95,22 +100,25 @@ button {
     margin-top: 20px;
 }
 
+#restriced{
+    cursor: not-allowed;
+}
+
 button:hover{
     border: 1px solid black;
 }
 
-.right-container{
-    width: 25vw;
-    height: 100%;
-    padding: 10px;
-    background-color: aliceblue;
-}
-
-#graph-area{
+.graph_area{
     width: 50vw;
     height: 100%;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+#generated_data_graph, #cluster_data_graph{
+    width: 100%;
+    display: contents;
 }
 
 </style>
@@ -148,25 +156,90 @@ button:hover{
             <input style="width: 18.5%;" type="number" id="imbalance_2" placeholder="C2" min="0" max=".5" step=".01"/>
             <br>
 
-
-
-
-            <button onclick="get_value()" py-click="generate_overlapping_clusters(js.no_of_cluster, js.no_of_dimensions, js.num_datapoints, js.overlap_percentage, js.l, [js.imbalance_1, js.imbalance_2], js.distribution_type)" type="button">
+            <button onclick="get_value(); add_py_click();" py-click="generate_overlapping_clusters(js.no_of_cluster, js.no_of_dimensions, js.num_datapoints, js.overlap_percentage, js.l, [js.imbalance_1, js.imbalance_2], js.distribution_type)" type="button">
                 Generate Data
             </button>
         </form>
-
+        
         <div class="data-description">
           <h3>Generated Data Description</h3>
-          <div id="data-description">please generate data!</div>
+          <div id="data_description">please generate data!</div>
+        </div>
+    </div>
+    
+      <div class="graph_area">
+          <div id="generated_data_graph"></div>
+          <div id="cluster_data_graph"></div>
+      </div>
+  
+      <div class="right-container">
+        <form>
+            <h3>Clustering Algorithm Options</h3>
+            <label>Choose Clustering Algorithm:</label>
+            <select id="clustering_algorithm">
+                <option value="kmeans">K-Means</option>
+                <option value="hierarchical_clustering">Hierarchical</option>
+                <option value="gmm"> Gaussian Mixture Model</option>
+                <option value="mean_shift">Mean-Shift</option>
+            </select>
+            <label>Number of Clusters:</label>
+            <input type="number" id="no_of_cluster_algo" placeholder="Number of clusters" value="2" min="2" step="1"/>
+            <br>
+
+            <button onclick="get_value();" type="button" id="restriced">
+                Cluster Data
+            </button>
+            <!-- <button onclick="get_value();" py-click="clustering(js.clustering_algorithm)" type="button" id="restriced">
+                Cluster Data
+            </button> -->
+        </form>
+
+        <div class="data-description" style="display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <h3>External Measure</h3>
+            <table>
+                <tr>
+                    <td><b>Precision</b></td>
+                    <td id="precision"></td>
+                </tr>
+                <tr>
+                    <td><b>Recall</b></td>
+                    <td id="recall"></td>
+                </tr>
+                <tr>
+                    <td><b>F-measure</b></td>
+                    <td id="f_measure"></td>
+                </tr>
+                <tr>
+                    <td><b>Adjusted Rand Index</b></td>
+                    <td id="ari"></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3 style="padding-top: 6px;">Internal Measure</h3>
+        <table>
+            <tr>
+                <td><b>SSE</b></td>
+                <td id="sse"></td>
+            </tr>
+            <tr>
+                <td><b>Silhouette Coefficient</b></td>
+                <td id="silhouette"></td>
+            </tr>
+            <tr>
+                <td><b>Dunn Index</b></td>
+                <td id="dunn"></td>
+            </tr>
+              </tbody>
+            </table>
+        </div>
+
+        <div class="data-description">
+            <h3>Clustered Data Description</h3>
+            <div id="cluster_description">please cluster data!</div>
         </div>
 
       </div>
-  
-      
-      <div id="graph-area"></div>
-  
-      <div class="right-container"></div>
     </div>
     
     <script>
@@ -178,9 +251,14 @@ button:hover{
         var overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
         var imbalance_1 = parseFloat(document.getElementById("imbalance_1").value);
         var imbalance_2 = parseFloat(document.getElementById("imbalance_2").value);
+        var clustering_algorithm = document.getElementById("clustering_algorithm").value;
+        var no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
+        
 
+        var restriced = document.getElementById("restriced");
 
-        var data_description = document.getElementById("data-description");
+        // var data_description = document.getElementById("data_description");
+        // var cluster_description = document.getElementById("cluster_description");
         
     
         function get_value() {
@@ -209,31 +287,43 @@ button:hover{
                 if(no_of_cluster == 3){imbalance_2 = .3333}
             }
 
+            clustering_algorithm = document.getElementById("clustering_algorithm").value;
+            no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
             
-            
+            console.log(no_of_cluster_algo)
             
             setTimeout(() => {
                 //data_description.innerHTML += "<a href = \"pyscript.interpreter.globals.get('x')\" download = \"file_name.csv\"><button>Download Data</button></a>"
             }, 100);
         }
 
+        function add_py_click() {
+            restriced.style.cursor = "pointer";
+            restriced.setAttribute("py-click", "clustering(js.clustering_algorithm)")
+        }
+
 
     </script>
 
     <py-config>
-      packages = ["numpy", "pandas", "matplotlib"]
+      packages = ["numpy", "pandas", "matplotlib", "scikit-learn"]
     </py-config>
 
     <py-script>
         import js
-        from pyodide.ffi import create_proxy
         import numpy as np
         import pandas as pd
         import matplotlib.pyplot as plt
+        import warnings
+        warnings.filterwarnings("ignore")
         
         np.random.seed(42)
         
+        no_of_gen_cluster = js.no_of_cluster
+        num_dimensions = js.no_of_dimensions
+
         def generate_overlapping_clusters(num_clusters, num_dimensions, num_datapoints, overlap_percentage, L, cluster_percentage_list, distribution_type):
+            num_dimensions = js.no_of_dimensions
             range_list = []
 
             for i in range(num_clusters*2):
@@ -280,36 +370,152 @@ button:hover{
             df = pd.DataFrame(col_dict)
             df['Cluster'] = cluster_indices_per_cluster
             
-            # Plot
             
-            Element('graph-area').clear()            
-            
+            # Plot the Generated Data
+            Element('generated_data_graph').clear()
             
             if(num_dimensions == 2):
-                plt.scatter(df['Dimension 1'], df['Dimension 2'], c=df['Cluster'])
+                plt.scatter('Dimension 1', 'Dimension 2', c='Cluster', data=df)
                 plt.xlabel('Dimension 1')
                 plt.ylabel('Dimension 2')
                 plt.title('Plot of Generated Data')
-                display(plt, target="graph-area")
+                display(plt, target="generated_data_graph")
                 plt.clf()
             
             if(num_dimensions == 3):
                 ax = plt.axes(projection ="3d")
-                ax.scatter3D(df['Dimension 1'], df['Dimension 2'], df['Dimension 3'],  c=df['Cluster'])
+                ax.scatter3D('Dimension 1', 'Dimension 2', 'Dimension 3', c='Cluster', data=df)
                 ax.set_xlabel('Dimension 1')
                 ax.set_ylabel('Dimension 2')
                 ax.set_zlabel('Dimension 3')
                 plt.title('Plot of Generated Data')
-                display(plt, target="graph-area")
+                display(plt, target="generated_data_graph")
                 plt.clf()
         
 
             # display description on page
-            description_div = Element("data-description")
-            description_div.element.innerHTML = df.groupby('Cluster').describe().T.to_html()    
+            data_description_div = Element("data_description")
+            data_description_div.element.innerHTML = df.groupby('Cluster').describe().T.to_html()    
         
         def download_data():
             df.to_csv("cluster_data.csv")     
+
+
+
+
+        # Clustering Code
+
+        from sklearn.cluster import KMeans, AgglomerativeClustering
+        from sklearn.mixture import GaussianMixture
+        from sklearn.cluster import MeanShift
+        from sklearn.metrics import precision_score, recall_score, f1_score, adjusted_rand_score
+        from sklearn.metrics import silhouette_score
+        from sklearn.metrics import davies_bouldin_score
+
+        num_clusters = js.no_of_cluster_algo
+        
+        def perform_kmeans(df):
+            num_clusters = js.no_of_cluster_algo
+            kmeans = KMeans(n_clusters=num_clusters)
+            labels = kmeans.fit_predict(df)
+            return labels, "K-Means"
+            
+        def perform_hierarchical_clustering(df):
+            num_clusters = js.no_of_cluster_algo
+            hierarchical = AgglomerativeClustering(n_clusters=num_clusters)
+            labels = hierarchical.fit_predict(df)
+            return labels, "Hierarchical Clustering"
+            
+        def perform_gmm(df):
+            num_clusters = js.no_of_cluster_algo
+            gmm = GaussianMixture(n_components=num_clusters)
+            labels = gmm.fit_predict(df)
+            return labels, "Gaussian Mixture Model"
+            
+        def perform_mean_shift(df):
+            num_clusters = js.no_of_cluster_algo
+            meanshift = MeanShift()
+            labels = meanshift.fit_predict(df)
+            return labels, "Mean Shift"
+        
+        algorithms = {
+            "kmeans": perform_kmeans,
+            "hierarchical_clustering": perform_hierarchical_clustering,
+            "gmm": perform_gmm,
+            "mean_shift": perform_mean_shift
+        }
+        
+        algorithm_name = ""
+
+        def clustering(choice):
+            num_clusters = js.no_of_cluster_algo
+            num_dimensions = js.no_of_dimensions
+            no_of_gen_cluster = js.no_of_cluster
+
+            df_algo = df.drop(columns=['Cluster'])
+            labels, algorithm_name = algorithms[choice](df_algo)
+        
+            # Calculate and display external measures
+            true_labels = df['Cluster']
+            if(no_of_gen_cluster == 2):
+                true_labels_map = {'C1': 0, 'C2': 1}
+            if(no_of_gen_cluster == 3):
+                true_labels_map = {'C1': 0, 'C2': 1, 'C3': 2}
+            true_labels_int = true_labels.map(true_labels_map)
+        
+            precision = precision_score(true_labels_int, labels, average='weighted')
+            Element("precision").element.innerHTML = precision
+            
+            recall = recall_score(true_labels_int, labels, average='weighted')
+            Element("recall").element.innerHTML = recall
+            
+            f_measure = f1_score(true_labels_int, labels, average='weighted')
+            Element("f_measure").element.innerHTML = f_measure
+            
+            ari = adjusted_rand_score(true_labels_int, labels)
+            Element("ari").element.innerHTML = ari
+            
+            # Calculate and display internal measures
+            kmeans = KMeans(n_clusters=num_clusters)
+            kmeans.fit(df_algo)
+            sse = kmeans.inertia_
+            Element("sse").element.innerHTML = sse
+            
+            silhouette = silhouette_score(df_algo, labels)
+            Element("silhouette").element.innerHTML = silhouette
+            
+            dunn = davies_bouldin_score(df_algo, labels)
+            Element("dunn").element.innerHTML = dunn
+
+            # add clustering algo label on df_algo
+            add_C = lambda x: [f"C{c}" for c in x]
+            df_algo[f"{algorithm_name} Cluster"] = add_C(labels+1)
+
+
+            # Plot the Clustered Data
+            Element('cluster_data_graph').clear()
+
+            if(num_dimensions == 2):
+                plt.scatter('Dimension 1', 'Dimension 2', c=f"{algorithm_name} Cluster", data=df_algo)
+                plt.xlabel('Dimension 1')
+                plt.ylabel('Dimension 2')
+                plt.title(f'Clusters Formed by {algorithm_name}')
+                display(plt, target="cluster_data_graph")
+                plt.clf()
+
+            if(num_dimensions == 3):
+                ax = plt.axes(projection ="3d")
+                ax.scatter3D('Dimension 1', 'Dimension 2', 'Dimension 3', c=f"{algorithm_name} Cluster", data=df_algo)
+                ax.set_xlabel('Dimension 1')
+                ax.set_ylabel('Dimension 2')
+                ax.set_zlabel('Dimension 3')
+                plt.title(f'Clusters Formed by {algorithm_name}')
+                display(plt, target="cluster_data_graph")
+                plt.clf()
+
+            # display cluster description on page
+            cluster_description_div = Element("cluster_description")
+            cluster_description_div.element.innerHTML = df_algo.groupby(f"{algorithm_name} Cluster").describe().T.to_html()
 
     </py-script>
 
