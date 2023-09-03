@@ -314,7 +314,7 @@ button:hover{
             restriced.style.cursor = "not-allowed";
             restriced.removeAttribute("py-click");
             restriced.style.backgroundColor = "lightcoral";
-            restriced.setAttribute("title", "Please reduce overlap percentage");
+            restriced.setAttribute("title", "Please reduce overlap percentage below 0.2");
         }
     
         function get_value() {
@@ -328,7 +328,10 @@ button:hover{
             if(no_of_cluster > 3) {no_of_cluster = 3};
             
             l = parseInt(document.getElementById("l").value);
+            if(isNaN(l)){l = 1}
+            
             overlap_percentage = parseFloat(document.getElementById("overlap_percentage").value);
+            if(isNaN(overlap_percentage)){overlap_percentage = 0}
             if(overlap_percentage > 1) {overlap_percentage = 1};
             
             imbalance_1 = parseFloat(document.getElementById("imbalance_1").value);
@@ -551,13 +554,13 @@ button:hover{
             num_clusters = js.no_of_cluster
             hierarchical = AgglomerativeClustering(n_clusters=num_clusters)
             labels = hierarchical.fit_predict(df)
-            return labels, "Hierarchical Clustering"
+            return labels, "Hierarchical"
             
         def perform_gmm(df):
             num_clusters = js.no_of_cluster
             gmm = GaussianMixture(n_components=num_clusters)
             labels = gmm.fit_predict(df)
-            return labels, "Gaussian Mixture Model"
+            return labels, "Gaussian Mixture"
             
         def perform_mean_shift(df):
             num_clusters = js.no_of_cluster
