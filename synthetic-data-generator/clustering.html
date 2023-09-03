@@ -43,6 +43,10 @@ form, .data-description{
     margin-bottom: 20px;
 }
 
+.data-description > table > tbody > tr > td{
+    width: 50%;
+}
+
 #data_description, #cluster_description{
     display: flex;
     align-items: center;
@@ -196,11 +200,11 @@ button:hover{
                     <option value="mean_shift">Mean-Shift</option>
                 </select>
 
-                <label>Number of Clusters:</label>
+                <!-- <label>Number of Clusters:</label>
                 <select id="no_of_cluster_algo">
                     <option value=2>2</option>
                     <option value=3>3</option>
-                </select>
+                </select> -->
 
                 <button onclick="cluster_data_click();" type="button" id="restriced" title="Please generate Data">
                     Cluster Data
@@ -268,7 +272,7 @@ button:hover{
         var imbalance_1 = parseFloat(document.getElementById("imbalance_1").value);
         var imbalance_2 = parseFloat(document.getElementById("imbalance_2").value);
         var clustering_algorithm = document.getElementById("clustering_algorithm").value;
-        var no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
+        // var no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
         
 
         var restriced = document.getElementById("restriced");
@@ -294,15 +298,15 @@ button:hover{
                 if(parseFloat(document.getElementById("overlap_percentage").value) > 0.2){
                     remove_py_click();
                 }
-                document.getElementById("no_of_cluster_algo").style.cursor="not-allowed";
-                document.getElementById("no_of_cluster_algo").style.borderColor="red";
-                document.getElementById("no_of_cluster_algo").setAttribute("title", "Can't use in mean shift");
+                // document.getElementById("no_of_cluster_algo").style.cursor="not-allowed";
+                // document.getElementById("no_of_cluster_algo").style.borderColor="red";
+                // document.getElementById("no_of_cluster_algo").setAttribute("title", "Can't use in mean shift");
             }
             else{
                 add_py_click();
-                document.getElementById("no_of_cluster_algo").style.cursor="auto";
-                document.getElementById("no_of_cluster_algo").style.borderColor="black";
-                document.getElementById("no_of_cluster_algo").setAttribute("title", "Select clusters for algorithm");
+                // document.getElementById("no_of_cluster_algo").style.cursor="auto";
+                // document.getElementById("no_of_cluster_algo").style.borderColor="black";
+                // document.getElementById("no_of_cluster_algo").setAttribute("title", "Select clusters for algorithm");
             }
         }
 
@@ -349,7 +353,7 @@ button:hover{
 
         function cluster_data_click(){
             clustering_algorithm = document.getElementById("clustering_algorithm").value;
-            no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
+            // no_of_cluster_algo = parseInt(document.getElementById("no_of_cluster_algo").value);
         }
 
         function add_py_click() {
@@ -535,28 +539,28 @@ button:hover{
         from sklearn.metrics import silhouette_score
         from sklearn.metrics import davies_bouldin_score
 
-        num_clusters = js.no_of_cluster_algo
+        num_clusters = js.no_of_cluster
         
         def perform_kmeans(df):
-            num_clusters = js.no_of_cluster_algo
+            num_clusters = js.no_of_cluster
             kmeans = KMeans(n_clusters=num_clusters)
             labels = kmeans.fit_predict(df)
             return labels, "K-Means"
             
         def perform_hierarchical_clustering(df):
-            num_clusters = js.no_of_cluster_algo
+            num_clusters = js.no_of_cluster
             hierarchical = AgglomerativeClustering(n_clusters=num_clusters)
             labels = hierarchical.fit_predict(df)
             return labels, "Hierarchical Clustering"
             
         def perform_gmm(df):
-            num_clusters = js.no_of_cluster_algo
+            num_clusters = js.no_of_cluster
             gmm = GaussianMixture(n_components=num_clusters)
             labels = gmm.fit_predict(df)
             return labels, "Gaussian Mixture Model"
             
         def perform_mean_shift(df):
-            num_clusters = js.no_of_cluster_algo
+            num_clusters = js.no_of_cluster
             meanshift = MeanShift()
             labels = meanshift.fit_predict(df)
             return labels, "Mean Shift"
@@ -572,7 +576,7 @@ button:hover{
 
         def clustering(choice):
             try:
-                num_clusters = js.no_of_cluster_algo
+                num_clusters = js.no_of_cluster
                 num_dimensions = js.no_of_dimensions
                 no_of_gen_cluster = js.no_of_cluster
 
@@ -588,28 +592,29 @@ button:hover{
                 true_labels_int = true_labels.map(true_labels_map)
             
                 precision = precision_score(true_labels_int, labels, average='weighted')
-                Element("precision").element.innerHTML = precision
+                Element("precision").element.innerHTML = round(precision, 4)
                 
                 recall = recall_score(true_labels_int, labels, average='weighted')
-                Element("recall").element.innerHTML = recall
+                Element("recall").element.innerHTML = round(recall, 4)
                 
                 f_measure = f1_score(true_labels_int, labels, average='weighted')
-                Element("f_measure").element.innerHTML = f_measure
+                Element("f_measure").element.innerHTML = round(f_measure, 4)
                 
                 ari = adjusted_rand_score(true_labels_int, labels)
-                Element("ari").element.innerHTML = ari
+                Element("ari").element.innerHTML = round(ari, 4)
                 
                 # Calculate and display internal measures
                 kmeans = KMeans(n_clusters=num_clusters)
                 kmeans.fit(df_algo)
+
                 sse = kmeans.inertia_
-                Element("sse").element.innerHTML = sse
+                Element("sse").element.innerHTML = round(sse, 4)
                 
                 silhouette = silhouette_score(df_algo, labels)
-                Element("silhouette").element.innerHTML = silhouette
+                Element("silhouette").element.innerHTML = round(silhouette, 4)
                 
                 dunn = davies_bouldin_score(df_algo, labels)
-                Element("dunn").element.innerHTML = dunn
+                Element("dunn").element.innerHTML = round(dunn, 4)
 
                 # add clustering algo label on df_algo
                 add_C = lambda x: [f"C{c}" for c in x]
