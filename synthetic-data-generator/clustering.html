@@ -321,6 +321,7 @@ button:hover{
             
             distribution_type = document.getElementById("distribution_type").value;
             num_datapoints = parseInt(document.getElementById("num_datapoints").value);
+            if(isNaN(num_datapoints)){num_datapoints = 100}
             
             no_of_dimensions = parseInt(document.getElementById("no_of_dimensions").value);
 
