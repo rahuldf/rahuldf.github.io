@@ -1,6 +1,6 @@
 <html>
   <head>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <title>Clustering with Synthetic Data | GIM | BDA SIP Project</title>
@@ -133,6 +133,26 @@ button:hover{
 
 #invisible_table{
     display: none;
+}
+
+@media screen and (max-width: 480px)  {
+  .container{
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .left-container, .right-container {
+    width: 100%;
+    /* min-height: 99vh; */
+    height: max-content;
+    padding: 10px;
+    background-color: aliceblue;
+  }
+  .graph_area {
+    width: 100%;
+    min-height: 400px;
+  }
 }
 
 </style>
