@@ -1,0 +1,19 @@
+@media screen and (max-width: 480px)  {
+  .container{
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .left-container, .right-container {
+    width: 100%;
+    /* min-height: 99vh; */
+    height: max-content;
+    padding: 10px;
+    background-color: aliceblue;
+  }
+  .graph_area {
+    width: 100%;
+    min-height: 400px;
+  }
+}
