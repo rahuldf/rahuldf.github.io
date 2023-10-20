@@ -136,6 +136,9 @@ button:hover{
 }
 
 @media screen and (max-width: 480px)  {
+  .title{
+    font-size: 24px;
+  }
   .container{
     display: flex;
     align-items: flex-start;
@@ -152,6 +155,10 @@ button:hover{
   .graph_area {
     width: 100%;
     min-height: 400px;
+  }
+  #generated_data_graph > div > img, #cluster_data_graph > div > img{
+    width: 100%;
+    display: contents;
   }
 }
 
