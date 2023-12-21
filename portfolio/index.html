@@ -230,14 +230,34 @@
 const iframe_box = document.getElementById('iframe_box');
 const iframe_header_link = document.getElementById('iframe_header_link')
 
-function iframe_boxer(iframe_link, new_tab_link = iframe_link) {
 
-    iframe_box.style.width = '600px';
-    iframe_header_link.href = new_tab_link;
-    // iframe_box.innerHTML += "<iframe src=" + iframe_link + "><\/script>"
+
+
+
+
+
+var windowWidth = screen.width;
+var maxDeviceWidth = 1440;
+if (windowWidth > maxDeviceWidth) {
+    //Server the desktop version
+    //You can get the content with Ajax or load both and hide the other
+
+    function iframe_boxer(iframe_link, new_tab_link = iframe_link) {
+        iframe_box.style.width = '600px';
+        iframe_header_link.href = new_tab_link;
+        // iframe_box.innerHTML += "<iframe src=" + iframe_link + "><\/script>"
+
+        iframe_box.getElementsByTagName('iframe')[0].src = iframe_link;
+        // console.log(iframe_box.getElementsByTagName('iframe')[0].src)
+    }
     
-    iframe_box.getElementsByTagName('iframe')[0].src = iframe_link;
-    // console.log(iframe_box.getElementsByTagName('iframe')[0].src)
+} else {
+    //Load the mobile content - either with Ajax, or hide the desktop content
+
+    function iframe_boxer(iframe_link, new_tab_link = iframe_link) {
+        window.open(new_tab_link, "_blank");
+
+    }
 }
 
 
