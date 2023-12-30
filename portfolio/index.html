@@ -27,15 +27,7 @@
 
     </head>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GD556B9MET"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-GD556B9MET');
-    </script>
+
     
     <body>
         <!-- Google Tag Manager (noscript) -->
@@ -44,7 +36,7 @@
         <!-- End Google Tag Manager (noscript) -->
         <div class="wrapper">
             <header>
-                <h1><a href="https://rahuldf.github.io/portfolio/" style="color: #e6edf3;">Rahul Fulwadhwa</a></h1>
+                <h1><a id="home" href="https://rahuldf.github.io/portfolio/" style="color: #e6edf3;">Rahul Fulwadhwa</a></h1>
                 <img src="rahul_linkedIn.jpg" alt="image">
                 <p>
                     <br> 
@@ -52,11 +44,11 @@
                     <br>
                     <br> 
                     <br> 
-                    <a href="https://www.linkedin.com/in/rahul-fulwadhwa/" target="_blank">View my LinkedIn</a>
+                    <a id="view_linkedin" href="https://www.linkedin.com/in/rahul-fulwadhwa/" target="_blank">View my LinkedIn</a>
                     <br>
-                    <a href="https://rahuldf.github.io/portfolio/resume.pdf" target="_blank">View my Resume</a>
+                    <a id="view_resume" onclick="iframe_boxer('https://rahuldf.github.io/portfolio/resume.pdf')">View my Resume</a>
                     <br>
-                    <a href="mailto:rahulfulwadhwa@yahoo.com" >Write me an Email</a>
+                    <a id="mail" href="mailto:rahulfulwadhwa@yahoo.com" >Write me an Email</a>
                     <br>
                     <br>
                 </p>
@@ -79,7 +71,7 @@
                             <img src="https://img.shields.io/badge/Google Colab-e6edf3?style=flat-square&logo=googlecolab" alt="">
                             <img src="https://img.shields.io/badge/Financial%20Management-e6edf3?style=flat-square" alt="">
                         </div>
-                    <p><a onclick="iframe_boxer('./projects/financial_portfolio_Sector_constrain_special.html','https://colab.research.google.com/drive/1riE6FZXHd4sQRhewenuO1eJ8Se913yqf?usp=sharing');">View code</a></p>
+                    <p><a id="financialPortfolio" onclick="iframe_boxer('./projects/financial_portfolio_Sector_constrain_special.html','https://colab.research.google.com/drive/1riE6FZXHd4sQRhewenuO1eJ8Se913yqf?usp=sharing');">View code</a></p>
                 </div>
 
                 <div class="proj_card">
@@ -96,7 +88,7 @@
                             <img src="https://img.shields.io/badge/Scikit Learn-e6edf3?style=flat-square&logo=scikit-learn" alt="">
                             <img src="https://img.shields.io/badge/Python-e6edf3?style=flat-square&logo=Python" alt="">
                         </div>
-                    <p><a onclick="iframe_boxer('./projects/airline_satisfaction_classification.html','https://colab.research.google.com/drive/1iwZMrYJ362Eg89hgzW7G8zD6I7-5wt8e?usp=sharing');">View code</a></p>
+                    <p><a id="airlineSatisfaction" onclick="iframe_boxer('./projects/airline_satisfaction_classification.html','https://colab.research.google.com/drive/1iwZMrYJ362Eg89hgzW7G8zD6I7-5wt8e?usp=sharing');">View code</a></p>
                 </div>
                 
                 <div class="proj_card">
@@ -118,7 +110,7 @@
                             <img src="https://img.shields.io/badge/RoBERTa-e6edf3?style=flat-square" alt="">
                             <img src="https://img.shields.io/badge/Twitter-e6edf3?style=flat-square&logo=Twitter" alt="">
                         </div>
-                    <p><a href="https://colab.research.google.com/drive/1uVU4bF97Iyfa7DFC3aaTfPhso3DYNKOt?usp=sharing" target="_blank">View code on Colab</a></p>
+                    <p><a id="sentimentAnalysisBhumiNGO" href="https://colab.research.google.com/drive/1uVU4bF97Iyfa7DFC3aaTfPhso3DYNKOt?usp=sharing" target="_blank">View code on Colab</a></p>
                 </div>
 
 
@@ -135,7 +127,7 @@
                             <img src="https://img.shields.io/badge/Google Colab-e6edf3?style=flat-square&logo=googlecolab" alt="">
                             <img src="https://img.shields.io/badge/Financial%20Management-e6edf3?style=flat-square" alt="">
                         </div>
-                    <p><a onclick="iframe_boxer('./projects/stock_prediction_lstm.html','https://colab.research.google.com/drive/1_bBDG9McGZLzQFcOm073dsugTBshKQk-?usp=sharing');">View code</a></p>
+                    <p><a id="stockForecasting" onclick="iframe_boxer('./projects/stock_prediction_lstm.html','https://colab.research.google.com/drive/1_bBDG9McGZLzQFcOm073dsugTBshKQk-?usp=sharing');">View code</a></p>
                 </div>
 
                 <div class="proj_card">
@@ -151,7 +143,7 @@
                             <img src="https://img.shields.io/badge/SQL-e6edf3?style=flat-square&logo=mysql" alt="">
                             <img src="https://img.shields.io/badge/Exploratory Data Analysis-e6edf3?style=flat-square" alt="">
                         </div>
-                    <p><a onclick="iframe_boxer('./project-6/NYC-CitiBike-EDA.html','https://rahuldf.github.io/portfolio/project-6/index.html');">View code</a></p>    
+                    <p><a id="nycCitiBikeEDA" onclick="iframe_boxer('./project-6/NYC-CitiBike-EDA.html','https://rahuldf.github.io/portfolio/project-6/index.html');">View code</a></p>    
                         
                 </div>
                 
@@ -171,7 +163,7 @@
                             <img src="https://img.shields.io/badge/Stack Overflow-e6edf3?style=flat-square&logo=stackoverflow" alt="">
                         </div>
                     
-                        <p><a href="https://lookerstudio.google.com/reporting/fb342e65-938e-4223-a27d-5eef33dd288f" target="_blank">View Looker Studio Report</a></p>
+                        <p><a id="stackoverflowTagsAnalysis" href="https://lookerstudio.google.com/reporting/fb342e65-938e-4223-a27d-5eef33dd288f" target="_blank">View Looker Studio Report</a></p>
                     </div>
                     
                     <div class="proj_card">
@@ -187,7 +179,7 @@
                                 <img src="https://img.shields.io/badge/Story Telling with Data-e6edf3?style=flat-square" alt="">
                             </div>
                         
-                            <p><a onclick="iframe_boxer('https://app.powerbi.com/view?r=eyJrIjoiY2QwZWE3OWMtZTc2NS00ZTI5LWI0ZmEtNmUwYmI0Njg5N2RlIiwidCI6IjFmNDM2ODQxLWZkMzEtNGFhYy1iNDkyLTlkMWI2OTJjMTU3YiIsImMiOjEwfQ%3D%3D');">
+                            <p><a id="olympicDatasetAnalysis" onclick="iframe_boxer('https://app.powerbi.com/view?r=eyJrIjoiY2QwZWE3OWMtZTc2NS00ZTI5LWI0ZmEtNmUwYmI0Njg5N2RlIiwidCI6IjFmNDM2ODQxLWZkMzEtNGFhYy1iNDkyLTlkMWI2OTJjMTU3YiIsImMiOjEwfQ%3D%3D');">
                                 View PowerBI Dashboard
                             </a>
                         </p>
@@ -206,7 +198,7 @@
                                 <img src="https://img.shields.io/badge/Decision Making with Data-e6edf3?style=flat-square" alt="">
                                 <img src="https://img.shields.io/badge/Kaggle-e6edf3?style=flat-square&logo=kaggle" alt="">
                             </div>
-                        <p><a onclick="iframe_boxer('https://voicesofgim.wordpress.com/2022/10/22/analytics-is-evolving-businesses/');">View Article</a></p>
+                        <p><a id="analyticsArticle" onclick="iframe_boxer('https://voicesofgim.wordpress.com/2022/10/22/analytics-is-evolving-businesses/');">View Article</a></p>
                     </div>
 
                 <br>
@@ -218,8 +210,8 @@
                 <p>A selection of smaller projects demonstrating specific data science skills.</p>
                 <br>
                 <ul>
-                    <li><a href="https://rahuldf.github.io/portfolio/project-5/" target="_blank">Treating Outliers & Null Values</a></li>
-                    <li><a href="https://rahuldf.github.io/portfolio/project-3" target="_blank">Data Transformation w/ Python</a></li>
+                    <li><a id="treatingOutliers" href="https://rahuldf.github.io/portfolio/project-5/" target="_blank">Treating Outliers & Null Values</a></li>
+                    <li><a id="dataTransformation" href="https://rahuldf.github.io/portfolio/project-3" target="_blank">Data Transformation w/ Python</a></li>
                 </ul>
             </section>
 
@@ -229,7 +221,7 @@
         <div id="iframe_box">
             <div id="iframe_header">
                 <a id="iframe_header_link" href="https://colab.research.google.com/drive/1riE6FZXHd4sQRhewenuO1eJ8Se913yqf?usp=sharing" target="_blank">Open in New Tab ↗</a>
-                <button onclick="iframe_box.style.width = '0px';">✖</button>
+                <button id="close_iframe" onclick="iframe_box.style.width = '0px';">✖</button>
             </div>
             <div style="background-color:#30363d; height: 1px; width: 100%;"></div>
             <iframe src="" frameborder="0" style="    padding: 8px; border-radius: 0px 0px 14px 14px;;"></iframe>
