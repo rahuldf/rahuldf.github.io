@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Resale Price Prediction - Project by Rahul Fulwadhwa</title>
+
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+
+
+<style>
+
+
+*{
+    margin: 0%;
+    padding: 0%;
+    box-sizing: border-box;
+    font-family: arial,sans-serif;
+}
+
+body{
+    background-image: url(https://wrench.com/blog/content/images/2021/09/cars-in-lot.jpg);
+}
+
+h1{
+    display: flex;
+    width: 100%;
+    height: 60px;
+    background-color: rgba(0, 0, 0, .8);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    color: whitesmoke;
+}
+
+.content{
+    display: flex;
+}
+
+form{
+    width: 360px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, .8);
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    box-shadow: 0px 0px 8px whitesmoke;
+    margin: 20px;
+}
+
+label{
+    width: 60%;
+    display: inline-block;
+    color: whitesmoke;
+    font-size: 18px;
+    border-bottom: 1px solid whitesmoke;
+}
+
+input, select{
+    background-color: whitesmoke;
+    border: 1px solid;
+    border-radius: 4px;
+    font-size: 18px;
+    height: 32px;
+    width: 38%;
+    margin-bottom: 10px;
+}
+
+button {
+    text-decoration:none;
+    width: 100%;
+    background-color: whitesmoke;
+    border: 1px solid rgb(200, 200, 200);
+    border-radius: 4px;
+    color: black;
+    font-family: arial,sans-serif;
+    font-size: 18px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    cursor: pointer;
+}
+
+#restriced{
+    cursor: not-allowed;
+}
+
+button:hover{
+    border: 1px solid whitesmoke;
+}
+
+.model_output{
+    width: 720px;
+    height: 436px;
+    background-color: rgba(0, 0, 0, .8);
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    box-shadow: 0px 0px 8px whitesmoke;
+    margin: 20px;
+    margin-left: 0px;
+    color: whitesmoke;
+    display: flex;
+    flex-direction: column;
+}
+
+#upper_range, #lower_range{
+    width: 100%;
+    height: 25%;
+    font-size: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#prediction{
+    width: 100%;
+    height: 40%;
+    font-size: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#accuracy_detail{
+    width: 100%;
+    height: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+
+</style>
+
+
+
+
+</head>
+<body>
+
+    <py-config>
+        packages = ["numpy","scikit-learn"]
+        [[fetch]]
+        files = ["./model.sav"]
+    </py-config>
+    
+    <py-script>
+    import pickle
+    import numpy as np
+    import warnings
+    warnings.filterwarnings("ignore")
+    
+    loaded_model = pickle.load(open('model.sav', 'rb'))
+    
+    def predict(loaded_model,inputs):
+        output = loaded_model.predict(inputs)[0]
+        return output
+    
+    print(predict(loaded_model,[[100,2020,47000,936,118,25.44]]))
+    
+    </py-script>
+
+
+    <h1>Car Resale Price Prediction</h1>
+    <div class="content">
+        <form id="car-form">
+            <label for="power">Power (kW):</label>
+            <input type="number" id="power" name="power" min="0" required><br><br>
+            <label for="year">Year:</label>
+            <input type="number" id="year" name="year" min="2000" required><br><br>
+            <label for="kilometers_driven">Kilometers Driven:</label>
+            <input type="number" id="kilometers_driven" name="kilometers_driven" min="0" required><br><br>
+            <label for="engine">Engine (cc):</label>
+            <input type="number" id="engine" name="engine" min="0" required><br><br>
+            <label for="brand">Brand:</label>
+            <select id="brand" name="brand" required>
+                <option value="118">Brand 1</option>
+                <option value="119">Brand 2</option>
+                </select><br><br>
+            <label for="mileage">Mileage (km/L):</label>
+            <input type="number" id="mileage" name="mileage" step="0.01" min="0" required><br><br>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="message"></p>
+        <div class="model_output">
+            <div id="upper_range">zz</div>
+            <div id="prediction">xx</div>
+            <div id="lower_range">yy</div>
+            <div id="accuracy_detail">The model accuracy is 92%.</div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('car-form');
+        const message = document.getElementById('message');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(form); // Get form data
+            const data = {
+                power: parseFloat(formData.get('power')),
+                year: formData.get('year'),
+                kilometers_driven: parseInt(formData.get('kilometers_driven')),
+                engine: parseInt(formData.get('engine')),
+                brand: formData.get('brand'),
+                mileage: parseFloat(formData.get('mileage')),
+            };
+
+            // Send the data to your backend (replace with your logic)
+            console.log("Car data:", Object.values(data));
+
+            // Update message with success or error (example)
+            message.textContent = "Car data submitted successfully!";
+        });
+    </script>
+
+
+</body>
+</html>
