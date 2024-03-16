@@ -21,22 +21,28 @@
 }
 
 body{
+    overflow: hidden;
     background-image: url(https://wrench.com/blog/content/images/2021/09/cars-in-lot.jpg);
 }
 
-h1{
-    display: flex;
+h1, h3{
     width: 100%;
-    height: 60px;
+    height: max-content;
+    padding: 10px;
     background-color: rgba(0, 0, 0, .8);
     backdrop-filter: blur(10px);
+    display: flex;
     align-items: center;
     justify-content: center;
     color: whitesmoke;
+    text-align: center;
 }
 
 .content{
+    width: 100%;
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 form{
@@ -45,7 +51,6 @@ form{
     background-color: rgba(0, 0, 0, .8);
     backdrop-filter: blur(10px);
     border-radius: 6px;
-    box-shadow: 0px 0px 8px whitesmoke;
     margin: 20px;
 }
 
@@ -92,12 +97,11 @@ button:hover{
 }
 
 .model_output{
-    width: 720px;
-    height: 436px;
+    width: 800px;
+    height: 472px;
     background-color: rgba(0, 0, 0, .8);
     backdrop-filter: blur(10px);
     border-radius: 6px;
-    box-shadow: 0px 0px 8px whitesmoke;
     margin: 20px;
     margin-left: 0px;
     color: whitesmoke;
@@ -107,17 +111,23 @@ button:hover{
 
 #upper_range, #lower_range{
     width: 100%;
-    height: 25%;
-    font-size: 62px;
+    height: 23%;
+    font-size: 42px;
     display: flex;
-    align-items: center;
     justify-content: center;
+}
+
+#upper_range{
+    align-items: flex-end;
+}
+#lower_range{
+    align-items: flex-start;
 }
 
 #prediction{
     width: 100%;
     height: 40%;
-    font-size: 110px;
+    font-size: 66px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -125,7 +135,7 @@ button:hover{
 
 #accuracy_detail{
     width: 100%;
-    height: 10%;
+    height: 14%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,58 +151,65 @@ button:hover{
 
 </head>
 <body>
-
-    <py-config>
-        packages = ["numpy","scikit-learn"]
-        [[fetch]]
-        files = ["./model.sav"]
-    </py-config>
-    
-    <py-script>
-    import pickle
-    import numpy as np
-    import warnings
-    warnings.filterwarnings("ignore")
-    
-    loaded_model = pickle.load(open('model.sav', 'rb'))
-    
-    def predict(loaded_model,inputs):
-        output = loaded_model.predict(inputs)[0]
-        return output
-    
-    print(predict(loaded_model,[[100,2020,47000,936,118,25.44]]))
-    
-    </py-script>
-
-
     <h1>Car Resale Price Prediction</h1>
     <div class="content">
         <form id="car-form">
-            <label for="power">Power (kW):</label>
-            <input type="number" id="power" name="power" min="0" required><br><br>
+            <label for="power">Power (BHP):</label>
+            <input type="number" id="power" name="power" value="90" min="0" step=".01" required><br><br>
             <label for="year">Year:</label>
-            <input type="number" id="year" name="year" min="2000" required><br><br>
+            <input type="number" id="year" name="year" value="2010" min="2000" max="2024"><br><br>
             <label for="kilometers_driven">Kilometers Driven:</label>
-            <input type="number" id="kilometers_driven" name="kilometers_driven" min="0" required><br><br>
+            <input type="number" id="kilometers_driven" value="40000" name="kilometers_driven" min="0" required><br><br>
             <label for="engine">Engine (cc):</label>
-            <input type="number" id="engine" name="engine" min="0" required><br><br>
+            <input type="number" id="engine" name="engine" value="1200" min="0" required><br><br>
             <label for="brand">Brand:</label>
             <select id="brand" name="brand" required>
-                <option value="118">Brand 1</option>
-                <option value="119">Brand 2</option>
-                </select><br><br>
+            </select><br><br>
+            
+            <script>
+              const brands = {
+                'Audi': 234, 'BMW': 262, 'Chevrolet': 118, 
+                'Datsun': 13, 'Fiat': 23, 'Ford': 294, 
+                'Honda': 598, 'Hyundai': 1041, 
+                'Jaguar': 40, 'Jeep': 15, 'Land Rover': 51, 
+                'Mahindra': 265, 'Maruti': 1116, 
+                'Mercedes-Benz': 303, 'Mini': 26, 
+                'Mitsubishi': 26, 'Nissan': 89, 
+                'Porsche': 16, 'Renault': 145, 
+                'Skoda': 170, 'Tata': 179, 'Toyota': 391, 
+                'Volkswagen': 314, 'Volvo': 21}
+              ;
+            
+              const brandSelect = document.getElementById("brand");
+            
+              // Loop through the brands dictionary and create options
+              for (const brand in brands) {
+                const option = document.createElement("option");
+                option.value = brands[brand];
+                option.textContent = brand;
+                option.dataset.brandValue = brands[brand]; // Store value in data attribute
+                brandSelect.appendChild(option);
+              }
+            </script>
+            
             <label for="mileage">Mileage (km/L):</label>
-            <input type="number" id="mileage" name="mileage" step="0.01" min="0" required><br><br>
-            <button type="submit">Submit</button>
+            <input type="number" id="mileage" name="mileage" value="13" min="0" required><br><br>
+            
+            <button type="submit" py-click="give_pred()">Predict Resale Value</button>
         </form>
-        <p id="message"></p>
+
         <div class="model_output">
-            <div id="upper_range">zz</div>
-            <div id="prediction">xx</div>
-            <div id="lower_range">yy</div>
-            <div id="accuracy_detail">The model accuracy is 92%.</div>
+            <div id="upper_range">Upper Range: zz.zz</div>
+            <div id="prediction">Predicted Price: yy.yy</div>
+            <div id="lower_range">Lower Range: xx.xx</div>
+            <div id="accuracy_detail">
+                <b style="text-align: center;"> Prices are in multiple of lakhs. <br> The model accuracy is 92.97% // MAE = 1.40 </b>
+            </div>
         </div>
     </div>
+    <h3 style="position: fixed; bottom: 0px;">
+        <a style="color: whitesmoke;" href="https://www.linkedin.com/in/rahul-fulwadhwa/">Project by Rahul Fulwadhwa</a>
+    </h3>
 
     <script>
         const form = document.getElementById('car-form');
@@ -202,23 +219,57 @@ button:hover{
             event.preventDefault(); // Prevent default form submission
 
             const formData = new FormData(form); // Get form data
-            const data = {
-                power: parseFloat(formData.get('power')),
-                year: formData.get('year'),
-                kilometers_driven: parseInt(formData.get('kilometers_driven')),
-                engine: parseInt(formData.get('engine')),
-                brand: formData.get('brand'),
-                mileage: parseFloat(formData.get('mileage')),
-            };
-
-            // Send the data to your backend (replace with your logic)
-            console.log("Car data:", Object.values(data));
-
-            // Update message with success or error (example)
-            message.textContent = "Car data submitted successfully!";
+            
+            power = parseFloat(formData.get('power'))
+            year = parseInt(formData.get('year'))
+            kilometers_driven = parseInt(formData.get('kilometers_driven'))
+            engine = parseInt(formData.get('engine'))
+            brand = parseInt(formData.get('brand'))
+            mileage = parseFloat(formData.get('mileage'))
+        
         });
     </script>
 
+<py-config>
+    packages = ["scikit-learn"]
+    [[fetch]]
+        files = ["https://rahuldf.github.io/car_resale_price/model.sav"]
+    [splashscreen]
+        enabled = true
+</py-config>
+
+<py-script>
+import js
+import pickle
+import warnings
+warnings.filterwarnings("ignore")
+
+loaded_model = pickle.load(open('https://rahuldf.github.io/car_resale_price/model.sav', 'rb'))
+
+
+def predict(loaded_model,inputs):
+    output = loaded_model.predict(inputs)[0]
+    return output
+
+input_list = []
+
+def give_pred():
+    input_list = [
+        Element('power').element.value,
+        Element('year').element.value,
+        Element('kilometers_driven').element.value,
+        Element('engine').element.value,
+        Element('brand').element.value,
+        Element('mileage').element.value
+    ]
+
+    price = predict(loaded_model,[input_list])
+
+    Element("upper_range").element.innerHTML = f"Upper Range: {round(price + 1.4, 2)}"
+    Element("prediction").element.innerHTML = f"Predicted Price: {round(price, 2)}"
+    Element("lower_range").element.innerHTML = f"Lower Range: {round(price - 1.4, 2)}"
+
+</py-script>
 
 </body>
 </html>
