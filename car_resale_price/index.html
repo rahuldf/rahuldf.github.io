@@ -6,7 +6,7 @@
     <title>Car Resale Price Prediction - Project by Rahul Fulwadhwa</title>
 
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <!-- <script defer src="https://pyscript.net/latest/pyscript.js"></script> -->
 
 
 
@@ -40,6 +40,7 @@ h1, h3{
 
 .content{
     width: 100%;
+    height: max-content;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,6 +142,48 @@ button:hover{
     justify-content: center;
 }
 
+h3{
+        position: fixed; 
+        bottom: 0px;
+}
+
+/* mobile css */
+
+@media screen and (max-width: 480px)  {
+
+    body{
+        background-image: none;
+        overflow: visible;
+    }
+  
+    .content{
+        padding: 10px;
+        display: block;
+        height: 1300px;
+    }
+
+    form, .model_output{
+        width: 100%;
+        margin: 0px;
+    }
+
+    .model_output{
+        margin-top: 10px;
+    }
+
+    #upper_range, #lower_range{
+        font-size: large;
+    }
+
+    #prediction{
+        font-size: x-large;
+    }
+
+    h3{
+        bottom: 30%;
+    }
+
+}
 
 
 
@@ -193,7 +236,7 @@ button:hover{
             </script>
             
             <label for="mileage">Mileage (km/L):</label>
-            <input type="number" id="mileage" name="mileage" value="13" min="0" required><br><br>
+            <input type="number" id="mileage" name="mileage" value="13" min="0" step=".01" required><br><br>
             
             <button type="submit" py-click="give_pred()">Predict Resale Value</button>
         </form>
@@ -207,7 +250,7 @@ button:hover{
             </div>
         </div>
     </div>
-    <h3 style="position: fixed; bottom: 0px;">
+    <h3>
         <a style="color: whitesmoke;" href="https://www.linkedin.com/in/rahul-fulwadhwa/">Project by Rahul Fulwadhwa</a>
     </h3>
 
