@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
+  <title>StreamAI | Witty TTS Chatbot for your stream!</title>
   <link href='/style.css' rel='stylesheet'>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
 
 *{
@@ -72,7 +71,7 @@ body{
   padding-top: 80px;
 }
 
-.card-containen{
+.card-container{
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -83,7 +82,7 @@ body{
   height: 360px;
   padding: 20px;
   margin: 20px;
-  background-image: linear-gradient(to bottom, hsl(0, 0%, 6%), hsl(240, 100%, 10%));
+  background-image: linear-gradient(to bottom, hsl(0, 0%, 2%), hsl(240, 100%, 10%));
   border-color: #1a1818;
   border-radius: 18px;
   border-style: solid;
@@ -116,7 +115,7 @@ body{
 }
 
 .card-detail{
-  font-size: .6rem;
+  font-size: .8rem;
   text-align: center;
 }
 
@@ -125,7 +124,7 @@ body{
   --position: 2px; /* Size of individual dots */
   --space: calc(var(--position) * 2); /* Space between dots */
   position: relative;
-  height: 200px;
+  height: 160px;
   /* background: black; */
   overflow: hidden;
 }
@@ -195,6 +194,7 @@ body{
 }
 
 .shiny-cta {
+  margin: 30px 0px;
   --animation: gradient-angle linear infinite;
   --duration: 3s;
   --shadow-size: 2px;
@@ -354,13 +354,30 @@ body{
 }
 
 
-
 .footer{
   color: #e6edf3;
-  /* color: #171f2a; */
   margin: 100px 0;
   font-size: .8rem;
   letter-spacing: 1px;
+}
+
+
+@media screen and (max-width: 800px) {
+  .header-logo-section > svg{
+    width: 340px;
+  }
+  .section{
+    margin: 0px 10px;
+  }
+  .card-container{
+    flex-direction: column;
+  }
+
+  h1{
+    text-align: center;
+  }
+
+  
 }
 
 
@@ -379,7 +396,7 @@ body{
 
   <div class="section">
     <h1>How To Use</h1>
-    <div class="card-containen">
+    <div class="card-container">
       <div class="card">
         <div class="card-title">Select Superchat Amount</div>
         <img src="step-1.png" alt="">
@@ -403,7 +420,7 @@ body{
   <div class="section">
     <h1>Get StreamAI on your Stream</h1>
 
-    <div class="card-containen">
+    <div class="card-container">
       <div class="card price-card">
         <div class="card-title">Pay per Call</div>
         <div class="pricing">₹5/call</div>
@@ -417,7 +434,7 @@ body{
       </div> -->
     </div>
 
-    <a class="shiny-cta" href="http://google.com">
+    <a class="shiny-cta" href="http://google.com" target="_blank">
       <span>Get StreamAI</span>
     </a>
   </div>
