@@ -1,0 +1,212 @@
+:root {
+    --dark-background: rgb(18, 18, 18);
+    --dark-form-background: rgba(30, 30, 30, 0.8);
+    --dark-border: #333;
+    --light-text: #f0f0f0;
+    --blue: #1e90ff;
+    --blue-hover: #207bd6;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+body {
+    background-color: var(--dark-background);
+    color: var(--light-text);
+    background-image: radial-gradient(var(--dark-border) 8%, transparent 6%);
+    background-size: 25px 25px;
+    background-attachment: fixed;
+}
+
+.header-logo-section{
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.header-logo-section > svg{
+    position: relative;
+    z-index: 2;
+    width: 75%;
+    max-width: 720px;
+    fill: rgba(255, 255, 255, 0.9);
+    filter: drop-shadow(0 0 25px rgba(0,0,0,1));
+}
+
+.video-container{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: black;
+    overflow: hidden;
+}
+
+#blur-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    transition: 0.5s;
+    filter: grayscale(100%) contrast(230%) blur(8px);
+}
+
+.tag-line{
+    position: absolute;
+    bottom: 60px;
+    z-index: 1;
+    font-size: x-large;
+    font-weight: bolder;
+    text-align: center;
+}
+
+#webpage-logo-section {
+    background-image: linear-gradient(var(--dark-background), transparent 99%);
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* -------- Generic Webpage Content Section ----------- */
+
+.webpage-content-section, .highlighted-section {
+    width: 90%;
+    max-width: 1062px;
+    margin: 0px auto 20px auto;
+    padding: 20px;
+    background-color: rgba(0,0,0,.1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 18px;
+    border: 1px solid var(--dark-border);
+}
+
+.webpage-content-heading {
+    color: var(--light-text); /* Light text for heading */
+    text-align: center; /* Center the heading */
+    margin-bottom: 20px;
+}
+
+.webpage-text-content {
+    color: var(--light-text);
+    line-height: 1.6;
+    text-align: justify;
+}
+
+ul li{
+    margin-left: 20px;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    border-radius: 12px;
+    text-align: center;
+    width: 320px;
+    margin: 10px;
+    border: 1px solid var(--dark-border);
+    /* transition: 1s; */
+    overflow: hidden;
+}
+
+.step1{
+    background-image: url("/static/step-1.gif");
+    height: 250px;
+}
+.step2{
+    background-image: url("/static/step-2.gif");
+    height: 250px;
+}
+.step3{
+    background-image: url("/static/step-3.gif");
+    height: 250px;
+}
+
+.card:hover, .card:focus{
+    border-color: hsl(0, 0%, 50%);
+}
+
+.card-title{
+    font-weight: bold;
+    font-size: larger;
+    text-align: center;
+    background-image: linear-gradient(to bottom, black, transparent);
+    text-shadow: 0 0 25px rgba(0,0,0,1);
+    width: 100%;
+    padding: 20px;
+}
+
+.card > img{
+    height: min(320px, 100%);
+    border-radius: 13px;
+    border: 1px solid var(--light-text);
+    margin: 5px;
+    object-fit: cover;
+}
+
+.card > svg{
+    filter: invert();
+    height: 100px;
+}
+
+.card-detail{
+    font-size: small;
+    text-align: center;
+    padding: 20px;
+}
+
+.highlighted-section {
+    text-align: center;
+    background-image: linear-gradient(rgba(30, 143, 255, 0.25), transparent);
+}
+
+.cta-button {
+    background: var(--blue);
+    color: white;
+    font-size: larger;
+    margin-top: 20px;
+    padding: 10px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: none;
+}
+
+.cta-button:hover {
+    background: var(--blue-hover);
+}
+
+#footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid var(--dark-border);
+    background-color: var(--dark-background);
+}
+
+#footer > a {
+    color: var(--light-text);
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+#footer > a:hover {
+    text-decoration: underline;
+}
