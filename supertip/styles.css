@@ -128,15 +128,15 @@ ul li{
 }
 
 .step1{
-    background-image: url("/static/step-1.gif");
+    background-image: url("https://rahuldf.github.io/supertip/step-1.gif");
     height: 250px;
 }
 .step2{
-    background-image: url("/static/step-2.gif");
+    background-image: url("https://rahuldf.github.io/supertip/step-2.gif");
     height: 250px;
 }
 .step3{
-    background-image: url("/static/step-3.gif");
+    background-image: url("https://rahuldf.github.io/supertip/step-3.gif");
     height: 250px;
 }
 
