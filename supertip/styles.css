@@ -201,6 +201,30 @@ form button {
     margin-top: 10px;
 }
 
+form button:disabled {
+    /* background-color: #ccc; */
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.agreement-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    background-color: var(--dark-form-background);
+    border: 1px solid var(--dark-border);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 /* Pill-Shaped Buttons */
 .signup-button,
 .cta-button {
