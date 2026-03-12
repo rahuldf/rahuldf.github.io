@@ -115,7 +115,6 @@ ul li { margin-left: 20px; }
 a {
     color: var(--blue);
     text-decoration: none;
-    font-weight: bold;
 }
 
 a:hover {
@@ -157,6 +156,17 @@ select {
     box-sizing: border-box;
 }
 
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+input:disabled, textarea:disabled{
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
 select { width: 30%; margin-left: 10px; }
 
 textarea {
@@ -178,7 +188,7 @@ form span {
 
 form button,
 .signup-button,
-.cta-button {
+.cta-button, button {
     background-color: var(--blue);
     color: var(--light-text);
     border: none;
@@ -189,12 +199,12 @@ form button,
 
 form button:hover,
 .signup-button:hover,
-.cta-button:hover {
+.cta-button:hover, button:hover {
     background-color: var(--blue-hover);
 }
 
 /* Standard Rectangular Button (Forms) */
-form button {
+form button, button {
     padding: 12px 20px;
     border-radius: 10px;
     font-size: 1.1rem;
@@ -219,11 +229,7 @@ form button:disabled {
     box-sizing: border-box;
   }
 
-input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
+
 
 /* Pill-Shaped Buttons */
 .signup-button,
