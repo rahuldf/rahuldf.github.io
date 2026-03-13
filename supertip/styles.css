@@ -127,7 +127,7 @@ a:hover {
 fieldset {
     border: none;
     padding: 0;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 label {
@@ -265,7 +265,7 @@ form button:disabled {
 #streamer-image-content {
     position: relative;
     z-index: 2;
-    padding: 15px 0px;
+    padding: 10px 0px;
 }
 
 .streamer-image {
