@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Foraging Cat</title>
+    <style>
+        /* CSS to make it look cute and fit the screen */
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevents scrollbars */
+            background: radial-gradient(circle at center, #ffe4e1 0%, #ffb6c1 100%); /* Cute pastel pink gradient */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* Prevents mobile browser pull-to-refresh */
+            user-select: none; /* Prevents text selection while dragging */
+        }
+        
+        #gameCanvas {
+            display: block;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 0px #d1478e;
+            pointer-events: none; /* Let clicks pass through to canvas */
+            z-index: 10;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+            backdrop-filter: blur(4px);
+        }
+
+        h1 {
+            color: #ff69b4;
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #ffe4e1;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            padding: 0 20px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 26px;
+            font-weight: bold;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d1478e;
+            transition: all 0.1s;
+        }
+
+        button:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        /* --- NEW: Score Popup Animations --- */
+        .score-popup {
+            position: absolute;
+            left: 100%;
+            top: -5px;
+            margin-left: 10px;
+            font-size: 26px;
+            animation: floatUp 1s ease-out forwards;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        
+        .score-good { 
+            color: #adff2f; 
+            text-shadow: 2px 2px 0px #2e7d32; 
+        }
+        
+        .score-bad { 
+            color: #ff5252; 
+            text-shadow: 2px 2px 0px #b71c1c; 
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-25px) scale(1.3); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Game UI -->
+    <div id="ui"><span id="scoreContainer" style="position: relative;">Score: <span id="scoreText">0</span></span> | Time: <span id="timeText">60</span>s</div>
+    
+    <!-- The Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Start/Game Over Screen -->
+    <div id="overlay">
+        <h1 id="overlayTitle">The Foraging Cat</h1>
+        <p id="overlayDesc">Drag left and right to catch his treats!<br>Dodge the garlic!</p>
+        <button id="startBtn">Play</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const startBtn = document.getElementById('startBtn');
+        const scoreText = document.getElementById('scoreText');
+        const timeText = document.getElementById('timeText');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayDesc = document.getElementById('overlayDesc');
+
+        // Game Variables
+        let width, height;
+        let score = 0;
+        let timeLeft = 60;
+        let gameLoop;
+        let itemSpawner;
+        let timerInterval;
+        let isPlaying = false;
+
+        // Emoji Sizes
+        const playerSize = 70;
+        const itemSize = 45;
+
+        // --- NEW IMAGE SETUP ---
+        // Replace the "data:image..." strings with paths to your actual PNG/JPG files!
+        // Example: playerImgNormal.src = 'assets/hamster.png';
+        const playerImgNormal = new Image();
+        playerImgNormal.src = 'cat_normal.png';
+        
+        const playerImgHappy = new Image();
+        playerImgHappy.src = 'cat_happy.png';
+        
+        const playerImgSad = new Image();
+        playerImgSad.src = 'cat_sad.png';
+
+        // --- Good Items ---
+        const goodItemImg1 = new Image();
+        goodItemImg1.src = 'chicken.png';
+
+        const goodItemImg2 = new Image();
+        goodItemImg2.src = 'fish.png';
+
+        const goodItemImg3 = new Image();
+        goodItemImg3.src = 'egg.png';
+
+        const goodItems = [goodItemImg1, goodItemImg2, goodItemImg3];
+
+        const badItemImg = new Image();
+        badItemImg.src = 'garlic.png';
+
+        // Player Object
+        const player = {
+            x: 0,
+            y: 0,
+            image: playerImgNormal,
+            targetX: 0 // Used for smoother movement
+        };
+
+        // Falling Items Array
+        let items = [];
+
+        // Score Popup Function
+        function spawnScorePopup(amount) {
+            const popup = document.createElement('span');
+            popup.classList.add('score-popup');
+            
+            if (amount > 0) {
+                popup.innerText = `+${amount}`;
+                popup.classList.add('score-good');
+            } else {
+                popup.innerText = `${amount}`; // Already includes negative sign
+                popup.classList.add('score-bad');
+            }
+            
+            document.getElementById('scoreContainer').appendChild(popup);
+
+            // Clean up the DOM element after the animation finishes
+            setTimeout(() => {
+                popup.remove();
+            }, 1000);
+        }
+
+        // Resize canvas to fit screen perfectly
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Keep player at the bottom of the screen
+            player.y = height - 90;
+            if (!isPlaying) {
+                player.x = width / 2;
+                player.targetX = width / 2;
+            }
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Control Handling (Mouse & Touch)
+        function setTargetPosition(e) {
+            if (!isPlaying) return;
+            
+            // Get X position from either touch or mouse
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            // Set the target position, keeping it within screen bounds
+            player.targetX = Math.max(playerSize/2, Math.min(width - playerSize/2, clientX));
+        }
+
+        // Event Listeners for dragging/clicking
+        window.addEventListener('mousemove', setTargetPosition);
+        window.addEventListener('touchmove', setTargetPosition, { passive: false });
+        window.addEventListener('mousedown', setTargetPosition);
+        window.addEventListener('touchstart', (e) => {
+            setTargetPosition(e);
+            // Fix: Only prevent default if touching the canvas directly so the button still works!
+            if (e.target === canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        function spawnItem() {
+            // 70% chance for a Good Item, 30% chance for Garlic (Bad)
+            const isGood = Math.random() > 0.3;
+            
+            // Randomly select one of the 3 good items if it's a treat
+            const itemImage = isGood ? goodItems[Math.floor(Math.random() * goodItems.length)] : badItemImg;
+            
+            items.push({
+                x: Math.random() * (width - itemSize) + itemSize/2,
+                y: -50, // Start slightly above screen
+                speed: Math.random() * 3 + 3, // Fall speed between 3 and 6
+                image: itemImage,
+                isGood: isGood,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.1 // Slight spinning effect
+            });
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            items = [];
+            isPlaying = true;
+            player.image = playerImgNormal;
+            
+            // Reset player to mouse position if possible, or center
+            player.x = player.targetX;
+            
+            scoreText.innerText = score;
+            timeText.innerText = timeLeft;
+            overlay.style.display = 'none';
+
+            // Start spawning items (faster as game progresses? Let's keep it simple at 500ms for now)
+            itemSpawner = setInterval(spawnItem, 500);
+
+            // Start Countdown timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeText.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            update();
+        }
+
+        function endGame() {
+            isPlaying = false;
+            cancelAnimationFrame(gameLoop);
+            clearInterval(itemSpawner);
+            clearInterval(timerInterval);
+
+            overlayTitle.innerText = "Time's Up!";
+            overlayDesc.innerText = `You caught ${score} treats! 🐱`;
+            startBtn.innerText = "Play Again";
+            overlay.style.display = 'flex';
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            // Clear the screen for the next frame
+            ctx.clearRect(0, 0, width, height);
+
+            // Smooth player movement towards target position
+            player.x += (player.targetX - player.x) * 0.3;
+
+            // Draw Player using Image instead of text
+            // ctx.drawImage draws from the top-left, so we offset by half the size to center it
+            ctx.drawImage(player.image, player.x - playerSize/2, player.y - playerSize/2, playerSize, playerSize);
+
+            // Update and Draw Items
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed;
+                item.rotation += item.rotationSpeed;
+
+                // Draw Item with rotation
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.rotation);
+                ctx.drawImage(item.image, -itemSize/2, -itemSize/2, itemSize, itemSize);
+                ctx.restore();
+
+                // Collision Detection (Simple distance check)
+                let dx = player.x - item.x;
+                let dy = player.y - item.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Make the hitbox slightly smaller than the visual size to be forgiving
+                if (distance < (playerSize/2 + itemSize/2 - 15)) {
+                    // Hit!
+                    if (item.isGood) {
+                        score += 10;
+                        spawnScorePopup(10);
+                        // Give visual feedback by making player temporarily happy
+                        player.image = playerImgHappy;
+                        setTimeout(() => { if(isPlaying) player.image = playerImgNormal }, 250);
+                    } else {
+                        score = Math.max(0, score - 5); // Don't let score drop below 0
+                        spawnScorePopup(-5);
+                        // Give negative feedback
+                        player.image = playerImgSad;
+                        setTimeout(() => { if(isPlaying) player.image = playerImgNormal }, 350);
+                    }
+                    scoreText.innerText = score;
+                    items.splice(i, 1); // Remove item from array
+                    continue; // Skip the boundary check below
+                }
+
+                // Remove items that fall off the bottom of the screen
+                if (item.y > height + 50) {
+                    items.splice(i, 1);
+                }
+            }
+
+            // Loop the update function
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        // Start button listener
+        startBtn.addEventListener('click', startGame);
+
+    </script>
+</body>
+</html>
