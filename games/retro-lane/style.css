@@ -1,0 +1,354 @@
+/* =========================================
+   1. GLOBAL RESET & NATIVE APP FEEL
+   ========================================= */
+* {
+    box-sizing: border-box; margin: 0; padding: 0;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'VT323', monospace;
+    background-color: #09090D; /* Darker background for desktop filler */
+    color: #FFB800; overflow: hidden; touch-action: none; 
+    
+    /* Center the app on desktop */
+    display: flex; justify-content: center; align-items: center;
+}
+
+#app-container {
+    width: 100vw; height: 100vh;
+    max-width: 450px; /* Locks desktop width to a phone size */
+    position: relative;
+    background-color: #1A1A24; /* Actual game track background */
+    box-shadow: 0 0 30px rgba(0,0,0,0.8); /* Nice drop shadow for desktop */
+    overflow: hidden;
+}
+
+/* =========================================
+   2. SCREEN MANAGEMENT
+   ========================================= */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #1A1A24;
+    z-index: 10;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   3. TYPOGRAPHY & MENU UI
+   ========================================= */
+.game-title {
+    font-size: clamp(60px, 8vw, 100px);
+    color: #FFB800;
+    text-shadow: 4px 4px 0px #000, 0 0 25px rgba(255, 184, 0, 0.5);
+    margin-bottom: 5px;
+    letter-spacing: 5px;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: clamp(20px, 3vw, 28px);
+    color: #E2E8F0;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.menu-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.divider {
+    width: 100%;
+    text-align: center;
+    border-bottom: 2px solid #2A2A35;
+    line-height: 0.1em;
+    margin: 10px 0;
+    color: #2A2A35;
+}
+.divider span {
+    background: #1A1A24;
+    padding: 0 10px;
+}
+
+/* Retro Buttons */
+.retro-btn {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    padding: 12px 24px;
+    border: 2px solid #FFB800;
+    background: rgba(0, 0, 0, 0.5);
+    color: #FFB800;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.1s ease;
+}
+
+.retro-btn:active {
+    background: #FFB800;
+    color: #000;
+    transform: scale(0.98);
+}
+
+.retro-btn.primary { background: #FFB800; color: #000; }
+.retro-btn.primary:active { background: #FFF; border-color: #FFF; }
+.retro-btn.small { font-size: 20px; padding: 8px 16px; width: auto; }
+
+/* Join Room Input */
+.join-container {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+#join-room-input {
+    flex-grow: 1;
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    padding: 10px;
+    text-transform: uppercase;
+    text-align: center;
+    background: #000;
+    border: 2px solid #E2E8F0;
+    color: #FFF;
+    outline: none;
+}
+
+#join-room-input:focus { border-color: #FFB800; }
+
+#btn-join-room { width: auto; }
+
+/* =========================================
+   4. THE LOBBY
+   ========================================= */
+.lobby-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.lobby-header h2 {
+    font-size: 42px;
+    color: #FFF;
+}
+
+#room-code-display { color: #FFB800; }
+
+.lobby-instruction {
+    font-size: 24px;
+    color: #E2E8F0;
+    margin-bottom: 15px;
+}
+
+/* --- UPDATED COLOR GRID --- */
+#color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    width: 90%;
+    max-width: 400px;
+    margin-bottom: 30px;
+}
+
+.color-slot {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #2A2A35;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    color: #FFF;
+    text-shadow: 2px 2px 0 #000;
+    transition: transform 0.1s;
+}
+
+.color-slot:active {
+    transform: scale(0.9);
+}
+
+.color-slot.selected {
+    border-color: #FFF;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.lobby-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#player-count { font-size: 28px; color: #FFF; }
+#waiting-msg { font-size: 24px; color: #FF595E; animation: pulse 1s infinite alternate; }
+
+/* =========================================
+   5. GAME UI & TOUCH CONTROLS
+   ========================================= */
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-height: 100vh;
+    aspect-ratio: 9 / 16;
+    background: #1A1A24;
+    z-index: 1;
+}
+
+#mobile-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+#distance-tracker {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 22px; /* Significantly reduced size */
+    background: transparent;
+    border: none;
+    color: #FFB800;
+    text-shadow: 2px 2px 0px #000, 0 0 5px rgba(0,0,0,0.8); 
+}
+
+#touch-controls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    padding: 0 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 10;
+    pointer-events: none; /* Container ignores touches, buttons capture them */
+}
+
+.control-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    pointer-events: auto; /* Re-enable touches for buttons */
+}
+
+.touch-btn {
+    background: rgba(0, 0, 0, 0.6);
+    border: 3px solid rgba(255, 184, 0, 0.4);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'VT323', monospace;
+    font-size: 40px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Prevents Android context menus on long-press */
+    -webkit-touch-callout: none;
+}
+
+.touch-btn:active {
+    background: rgba(255, 184, 0, 0.8);
+    color: #000;
+    border-color: #FFB800;
+    transform: scale(0.95);
+}
+
+.d-pad {
+    width: 80px;
+    height: 80px;
+}
+
+.boost-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+#boost-counter {
+    font-size: 24px;
+    color: #E2E8F0;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.action-btn {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+    border-color: rgba(255, 89, 94, 0.4); /* Red tint for boost */
+    border-radius: 50%; /* Circle button for action */
+}
+.action-btn:active {
+    background: rgba(255, 89, 94, 0.8);
+    border-color: #FF595E;
+}
+
+/* =========================================
+   6. OVERLAYS & ANIMATIONS
+   ========================================= */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    background: rgba(26, 26, 36, 0.6);
+    z-index: 20;
+    pointer-events: none;
+}
+
+#countdown-text {
+    font-size: 150px;
+    color: #FFF;
+    text-shadow: 4px 4px 0px #000, 0 0 30px #FFB800;
+    animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+}
+
+#winner-screen { z-index: 30; background: rgba(26, 26, 36, 0.95); }
+#winner-title { font-size: 80px; color: #FFF; text-shadow: 4px 4px 0px #000, 0 0 20px #FFB800; animation: pulse 1s infinite alternate; }
+#winner-details { font-size: 60px; color: #FFB800; }
+
+@keyframes pulse {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    20% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================
+   7. ORIENTATION WARNING (Optional)
+   ========================================= */
+@media screen and (orientation: portrait) {
+    .game-title { font-size: 60px; }
+    .touch-btn { width: 60px; height: 60px; font-size: 30px; }
+    .action-btn { width: 80px; height: 80px; font-size: 24px; }
+}

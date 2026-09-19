@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CRITICAL FOR MOBILE: Prevents pinch-to-zoom and double-tap zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Retro Lane</title>
+    
+    <!-- VT323 Font for the Arcade Aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        
+        <!-- =========================================
+             SCREEN 1: THE MAIN MENU
+             ========================================= -->
+        <div id="main-menu" class="screen active">
+            <h1 class="game-title">RETRO LANE</h1>
+            <p class="subtitle">Survive the traffic. First to the flag wins.</p>
+            
+            <div class="menu-actions">
+                <button id="btn-single-player" class="retro-btn primary">SINGLE PLAYER (Vs Bots)</button>
+                
+                <div class="divider"><span>OR</span></div>
+                
+                <button id="btn-create-room" class="retro-btn secondary">CREATE MULTIPLAYER ROOM</button>
+                
+                <div class="join-container">
+                    <input type="text" id="join-room-input" placeholder="ENTER 5-DIGIT CODE" maxlength="5" autocomplete="off">
+                    <button id="btn-join-room" class="retro-btn action">JOIN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             SCREEN 2: THE LOBBY
+             ========================================= -->
+        <div id="lobby-screen" class="screen hidden">
+            <div class="lobby-header">
+                <h2>ROOM: <span id="room-code-display">OFFLINE</span></h2>
+                <button id="btn-copy-invite" class="retro-btn small">📋 COPY INVITE LINK</button>
+            </div>
+            
+            <p class="lobby-instruction">Select your car color:</p>
+            <div id="color-grid">
+                <!-- Color slots injected via JS -->
+            </div>
+
+            <div class="lobby-footer">
+                <p id="player-count">Players: 1/6</p>
+                <!-- Only visible to the Host -->
+                <button id="btn-start-race" class="retro-btn primary hidden">START RACE</button>
+                <p id="waiting-msg" class="hidden">Waiting for host to start...</p>
+            </div>
+        </div>
+
+        <!-- =========================================
+             SCREEN 3: THE GAME & UI
+             ========================================= -->
+        <div id="game-screen" class="screen hidden">
+            <!-- The Canvas scales via JS -->
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- Mobile HUD overlay -->
+            <div id="mobile-hud">
+                <div id="distance-tracker">30000m</div>
+            </div>
+
+            <!-- On-Screen Touch Controls -->
+            <div id="touch-controls">
+                <!-- Left Side: D-Pad -->
+                <div class="control-zone left" style="flex-direction: row;">
+                    <button id="btn-left" class="touch-btn d-pad">◀</button>
+                    <button id="btn-right" class="touch-btn d-pad">▶</button>
+                </div>
+                
+                <!-- Right Side: Action -->
+                <div class="control-zone right">
+                    <div class="boost-container">
+                        <span id="boost-counter">2x</span>
+                        <button id="btn-boost" class="touch-btn action-btn">BOOST</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The 3-2-1 Countdown Overlay -->
+            <div id="countdown-layer" class="overlay hidden">
+                <div id="countdown-text">3</div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             SCREEN 4: THE WINNER
+             ========================================= -->
+        <div id="winner-screen" class="screen hidden">
+            <h2 id="winner-title">WINNER!</h2>
+            <div id="winner-details">
+                <span id="winner-name">PLAYER</span>
+            </div>
+            <button id="btn-return-menu" class="retro-btn primary" style="margin-top: 40px;">RETURN TO MENU</button>
+        </div>
+
+    </div>
+
+    <!-- Ably CDN (We will initialize this in Phase 3) -->
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
