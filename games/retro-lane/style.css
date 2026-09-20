@@ -388,3 +388,27 @@ body {
     font-size: 22px;
     margin: 5px 0;
 }
+
+/* --- NAME PROMPT UI --- */
+#racer-name-input {
+    font-family: 'VT323', monospace;
+    font-size: 32px;
+    padding: 10px;
+    text-transform: uppercase;
+    text-align: center;
+    background: #000;
+    border: 2px solid #FFB800;
+    color: #FFF;
+    outline: none;
+    width: 80%;
+    max-width: 300px;
+    transition: box-shadow 0.2s;
+}
+
+#racer-name-input:focus {
+    box-shadow: 0 0 15px rgba(255, 184, 0, 0.5);
+}
+
+#menu-greeting:hover {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}

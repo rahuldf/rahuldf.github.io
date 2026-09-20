@@ -57,12 +57,6 @@ function playSound(soundName) {
     }
 }
 
-// --- 1. GLOBAL STATE ---
-let gameState = 'MENU'; // States: MENU, LOBBY, SINGLE_PLAYER, MULTIPLAYER, COASTING
-let currentRoomId = null;
-let isHost = false;
-let playerName = "Player" + Math.floor(Math.random() * 1000);
-
 // --- 2. DOM ELEMENT CACHING ---
 const screens = {
     menu: document.getElementById('main-menu'),
@@ -134,16 +128,70 @@ function renderColorGrid() {
     });
 }
 
-// Prompt for username when entering a lobby
-function promptForUsername() {
-    let name = prompt("Enter your racer name (Max 10 chars):", playerName);
-    if (name && name.trim().length > 0) {
-        playerName = name.trim().substring(0, 10).toUpperCase();
+// --- 1. GLOBAL STATE ---
+// Load from LocalStorage, fallback to random
+let playerName = localStorage.getItem('retroLaneName') || ("PLAYER" + Math.floor(Math.random() * 1000));
+let gameState = 'MENU'; 
+let currentRoomId = null;
+let isHost = false;
+
+// --- NAME PROMPT & LOCAL STORAGE LOGIC ---
+let nameCallback = null;
+
+function updateMenuGreeting() {
+    const display = document.getElementById('display-player-name');
+    if (display) display.innerText = playerName;
+}
+
+function showNamePrompt(callback, customMessage = "ENTER YOUR RACER NAME") {
+    document.getElementById('name-prompt-msg').innerText = customMessage;
+    document.getElementById('racer-name-input').value = playerName;
+    
+    const previousActiveScreen = document.querySelector('.screen:not(.hidden):not(#name-screen)');
+    if (previousActiveScreen) previousActiveScreen.classList.add('hidden');
+    
+    document.getElementById('name-screen').classList.remove('hidden');
+    document.getElementById('racer-name-input').focus();
+    
+    nameCallback = () => {
+        document.getElementById('name-screen').classList.add('hidden');
+        if (previousActiveScreen) previousActiveScreen.classList.remove('hidden');
+        if (callback) callback();
+    };
+}
+
+// Ensures first-time users set a name before continuing
+function requireName(callback) {
+    if (!localStorage.getItem('retroLaneName')) {
+        showNamePrompt(callback);
+    } else {
+        callback();
     }
 }
 
+document.getElementById('btn-save-name').addEventListener('click', saveNameHandler);
+document.getElementById('racer-name-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') saveNameHandler();
+});
+
+function saveNameHandler() {
+    const inputVal = document.getElementById('racer-name-input').value.trim().toUpperCase();
+    if (inputVal.length > 0) {
+        playerName = inputVal.substring(0, 10);
+        localStorage.setItem('retroLaneName', playerName);
+        updateMenuGreeting();
+        if (nameCallback) nameCallback();
+    }
+}
+
+// Allow users to manually change their name by clicking the greeting
+document.getElementById('menu-greeting').addEventListener('click', () => {
+    showNamePrompt(null, "UPDATE RACER NAME");
+});
+
 // --- 4. ROUTING & ROOM LOGIC ---
 function initializeRouting() {
+    updateMenuGreeting();
     const hash = window.location.hash.replace('#', '').trim().toUpperCase();
     
     if (hash.length === 5) {
@@ -158,18 +206,14 @@ function initializeRouting() {
 
 function joinRoom(roomId) {
     currentRoomId = roomId;
-    window.location.hash = roomId; // Updates URL so they can copy it
-    
-    promptForUsername();
+    window.location.hash = roomId; 
     renderColorGrid();
     
     document.getElementById('room-code-display').innerText = currentRoomId;
-    document.getElementById('btn-start-race').classList.add('hidden'); // Hide start button for guests
-    document.getElementById('waiting-msg').classList.remove('hidden'); // Show waiting text
+    document.getElementById('btn-start-race').classList.add('hidden'); 
+    document.getElementById('waiting-msg').classList.remove('hidden'); 
     
     showScreen('lobby');
-    
-    // In Phase 3, we will trigger the Ably connection here:
     connectToAblyRoom(currentRoomId);
 }
 
@@ -177,61 +221,45 @@ function createRoom() {
     isHost = true;
     currentRoomId = generateRoomId();
     window.location.hash = currentRoomId;
-    
-    promptForUsername();
     renderColorGrid();
 
     document.getElementById('room-code-display').innerText = currentRoomId;
-    document.getElementById('btn-start-race').classList.remove('hidden'); // Host gets the start button
+    document.getElementById('btn-start-race').classList.remove('hidden'); 
     document.getElementById('waiting-msg').classList.add('hidden');
     
     showScreen('lobby');
-    
-    // In Phase 3, we will trigger the Ably connection here:
     connectToAblyRoom(currentRoomId);
 }
 
-// --- 5. EVENT LISTENERS ---
 document.getElementById('btn-create-room').addEventListener('click', () => {
-    createRoom();
+    requireName(createRoom);
 });
 
 document.getElementById('btn-join-room').addEventListener('click', () => {
     const input = document.getElementById('join-room-input').value;
-    // Sanitizes input: removes spaces and forces uppercase
     const sanitizedId = input.trim().toUpperCase(); 
     
     if (sanitizedId.length === 5) {
-        joinRoom(sanitizedId);
+        requireName(() => joinRoom(sanitizedId));
     } else {
         alert("Please enter a valid 5-character Room Code.");
     }
 });
 
-// Allow hitting "Enter" key on the join input field
-document.getElementById('join-room-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        document.getElementById('btn-join-room').click();
-    }
-});
-
 document.getElementById('btn-single-player').addEventListener('click', () => {
-    gameState = 'SINGLE_PLAYER';
-    currentRoomId = 'OFFLINE';
-    isHost = true; // You are the host of your own offline game
-    
-    promptForUsername();
-    renderColorGrid();
-    
-    document.getElementById('room-code-display').innerText = "SINGLE PLAYER";
-    document.getElementById('btn-copy-invite').classList.add('hidden');
-    document.getElementById('btn-start-race').classList.remove('hidden');
-    document.getElementById('waiting-msg').classList.add('hidden');
-    
-    showScreen('lobby');
-    
-    // In Phase 2, we will generate the bots here:
-    // generateOfflineBots();
+    requireName(() => {
+        gameState = 'SINGLE_PLAYER';
+        currentRoomId = 'OFFLINE';
+        isHost = true; 
+        renderColorGrid();
+        
+        document.getElementById('room-code-display').innerText = "SINGLE PLAYER";
+        document.getElementById('btn-copy-invite').classList.add('hidden');
+        document.getElementById('btn-start-race').classList.remove('hidden');
+        document.getElementById('waiting-msg').classList.add('hidden');
+        
+        showScreen('lobby');
+    });
 });
 
 document.getElementById('btn-copy-invite').addEventListener('click', () => {
@@ -755,32 +783,43 @@ async function connectToAblyRoom(roomId) {
         // 1. Subscribe to ALL Lobby Updates (This single line replaces the 4 separate subscribe lines)
         roomChannel.presence.subscribe(handlePresenceUpdate);
         
-        // 2. Announce ourselves to the room
-        roomChannel.presence.enter({
-            name: playerName,
-            color: selectedColor,
-            isHost: isHost,
-            joinTime: myJoinTime
-        });
-
-        // 3. THE FIX: Fetch players who were already in the room before we joined!
+        // 2. Fetch players who are already in the room BEFORE entering presence
         roomChannel.presence.get((err, members) => {
             if (!err && members) {
+                const takenNames = [];
                 const takenColors = [];
+                
                 members.forEach(member => {
                     connectedPlayers[member.clientId] = member.data;
+                    takenNames.push(member.data.name.toUpperCase());
                     takenColors.push(member.data.color);
                 });
-                
-                // Auto-assign a safe color if the default is taken
-                if (takenColors.includes(selectedColor)) {
-                    selectedColor = LOBBY_COLORS.find(c => !takenColors.includes(c)) || LOBBY_COLORS[0];
-                    roomChannel.presence.update({
-                        name: playerName, color: selectedColor, isHost: isHost, joinTime: myJoinTime
-                    });
-                }
-                
-                updateLobbyUI();
+
+                // Recursive function that won't let them in until they pick a unique name
+                const attemptEntry = () => {
+                    if (takenNames.includes(playerName.toUpperCase())) {
+                        showNamePrompt(() => {
+                            attemptEntry(); // Re-verify the new name they just typed
+                        }, `NAME '${playerName}' IS TAKEN! CHOOSE ANOTHER:`);
+                    } else {
+                        // Auto-assign a safe color if their default is taken
+                        if (takenColors.includes(selectedColor)) {
+                            selectedColor = LOBBY_COLORS.find(c => !takenColors.includes(c)) || LOBBY_COLORS[0];
+                        }
+                        
+                        // 3. Name is safe! Announce ourselves to the room
+                        roomChannel.presence.enter({
+                            name: playerName,
+                            color: selectedColor,
+                            isHost: isHost,
+                            joinTime: myJoinTime
+                        });
+                        
+                        updateLobbyUI();
+                    }
+                };
+
+                attemptEntry();
             }
         });
 
