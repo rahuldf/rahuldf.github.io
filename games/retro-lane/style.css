@@ -8,7 +8,15 @@
 
 body {
     font-family: 'VT323', monospace;
-    background-color: #09090D; /* Darker background for desktop filler */
+    
+    /* Subtle Retro Arcade Grid Background */
+    background-color: #09090D;
+    background-image: 
+        linear-gradient(rgba(255, 184, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 184, 0, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    
     color: #FFB800; overflow: hidden; touch-action: none; 
     
     /* Center the app on desktop */
@@ -20,8 +28,19 @@ body {
     max-width: 450px; /* Locks desktop width to a phone size */
     position: relative;
     background-color: #1A1A24; /* Actual game track background */
-    box-shadow: 0 0 30px rgba(0,0,0,0.8); /* Nice drop shadow for desktop */
+    box-shadow: 0 0 30px rgba(0,0,0,0.8); 
     overflow: hidden;
+}
+
+/* 💻 DESKTOP-ONLY STYLES: Turn the container into a "Device" */
+@media (min-width: 500px) {
+    #app-container {
+        height: 90vh; /* Give it some breathing room top and bottom */
+        max-height: 950px;
+        border-radius: 24px; /* Phone-like rounded corners */
+        border: 8px solid #050508; /* Thick outer bezel */
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px rgba(255, 184, 0, 0.15); 
+    }
 }
 
 /* =========================================
@@ -351,4 +370,21 @@ body {
     .game-title { font-size: 60px; }
     .touch-btn { width: 60px; height: 60px; font-size: 30px; }
     .action-btn { width: 80px; height: 80px; font-size: 24px; }
+}
+
+#player-list-display {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #2A2A35;
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 280px;
+}
+
+#player-list-display > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 15px;
+    font-size: 22px;
+    margin: 5px 0;
 }

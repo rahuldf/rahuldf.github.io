@@ -144,17 +144,16 @@ function promptForUsername() {
 
 // --- 4. ROUTING & ROOM LOGIC ---
 function initializeRouting() {
-    // Check if user arrived via an invite link (e.g., retro-lane.com/#X7K9P)
     const hash = window.location.hash.replace('#', '').trim().toUpperCase();
     
     if (hash.length === 5) {
-        console.log(`🔗 Invite link detected. Routing to Room: ${hash}`);
-        joinRoom(hash);
-    } else {
-        showScreen('menu');
-        // Clear invalid hashes to keep the URL clean
+        console.log(`🔗 Invite link detected.`);
+        // Auto-fill the input but force them to click JOIN to unlock the AudioContext
+        document.getElementById('join-room-input').value = hash;
         window.history.replaceState(null, null, ' '); 
     }
+    
+    showScreen('menu');
 }
 
 function joinRoom(roomId) {
@@ -767,9 +766,20 @@ async function connectToAblyRoom(roomId) {
         // 3. THE FIX: Fetch players who were already in the room before we joined!
         roomChannel.presence.get((err, members) => {
             if (!err && members) {
+                const takenColors = [];
                 members.forEach(member => {
                     connectedPlayers[member.clientId] = member.data;
+                    takenColors.push(member.data.color);
                 });
+                
+                // Auto-assign a safe color if the default is taken
+                if (takenColors.includes(selectedColor)) {
+                    selectedColor = LOBBY_COLORS.find(c => !takenColors.includes(c)) || LOBBY_COLORS[0];
+                    roomChannel.presence.update({
+                        name: playerName, color: selectedColor, isHost: isHost, joinTime: myJoinTime
+                    });
+                }
+                
                 updateLobbyUI();
             }
         });
@@ -794,6 +804,11 @@ async function connectToAblyRoom(roomId) {
 function handlePresenceUpdate(member) {
     if (member.action === 'leave') {
         delete connectedPlayers[member.clientId];
+        
+        // Remove the zombie car from the physics engine if mid-race
+        if (playerObjects[member.clientId]) {
+            delete playerObjects[member.clientId];
+        }
     } else {
         connectedPlayers[member.clientId] = member.data;
     }
@@ -992,3 +1007,22 @@ function setupNetworkListeners() {
         }
     });
 }
+
+let lastFocusTime = Date.now();
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        lastFocusTime = Date.now();
+    } else if (gameState === 'RACING') {
+        // Calculate how many frames were missed (assuming 60fps)
+        let timeAwayMs = Date.now() - lastFocusTime;
+        let missedFrames = Math.floor(timeAwayMs / 16.6);
+        
+        // Fast-forward the track and obstacles
+        currentDistance -= (globalSpeed * 2.5) * missedFrames;
+        for (let i = 0; i < missedFrames; i++) {
+            ObstacleManager.update(globalSpeed);
+        }
+        console.log(`⏱️ Caught up ${missedFrames} frames after tab restore.`);
+    }
+});
