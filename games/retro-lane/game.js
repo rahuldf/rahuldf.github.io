@@ -123,7 +123,8 @@ function renderColorGrid() {
                     roomChannel.presence.update({
                         name: playerName,
                         color: selectedColor,
-                        isHost: isHost
+                        isHost: isHost,
+                        joinTime: myJoinTime
                     });
                 }
             });
@@ -734,6 +735,7 @@ let ably = null;
 let roomChannel = null;
 let connectedPlayers = {}; // Stores { clientId: { name, color, isHost } }
 let myClientId = null;
+let myJoinTime = Date.now();
 
 async function connectToAblyRoom(roomId) {
     console.log(`🔌 Attempting to connect to room: ${roomId}...`);
@@ -758,7 +760,8 @@ async function connectToAblyRoom(roomId) {
         roomChannel.presence.enter({
             name: playerName,
             color: selectedColor,
-            isHost: isHost 
+            isHost: isHost,
+            joinTime: myJoinTime
         });
 
         // 3. THE FIX: Fetch players who were already in the room before we joined!
@@ -799,33 +802,120 @@ function handlePresenceUpdate(member) {
 }
 
 function updateLobbyUI() {
+    if (currentRoomId === 'OFFLINE') return; // Ignore for single player
+
+    // 1. LEADER ELECTION: Find the player who has been in the room the longest
+    let oldestTime = Infinity;
+    let hostId = null;
+
+    for (let id in connectedPlayers) {
+        let pTime = connectedPlayers[id].joinTime;
+        if (pTime < oldestTime) {
+            oldestTime = pTime;
+            hostId = id;
+        } else if (pTime === oldestTime) {
+            // Tie-breaker: If two people joined on the exact same millisecond
+            if (!hostId || id < hostId) hostId = id;
+        }
+    }
+    
+    // Automatically promote ourselves if we are the oldest surviving player!
+    isHost = (myClientId === hostId);
+
+    // 2. UI UPDATES
     const pCount = Object.keys(connectedPlayers).length;
     document.getElementById('player-count').innerText = `Players: ${pCount}/6`;
     
-    // Refresh the color grid so taken colors are locked out
     renderColorGrid(); 
+    renderPlayerList(hostId); // Trigger the new visual list
     
-    // Host Controls: Always show the start button for the host so you can test alone!
+    // 3. HOST CONTROLS
+    const startBtn = document.getElementById('btn-start-race');
+    const waitingMsg = document.getElementById('waiting-msg');
+
     if (isHost) {
-        document.getElementById('btn-start-race').classList.remove('hidden');
+        waitingMsg.classList.add('hidden');
+        if (pCount > 1) {
+            startBtn.classList.remove('hidden');
+        } else {
+            startBtn.classList.add('hidden'); // Cannot start a race with 1 person
+        }
+    } else {
+        startBtn.classList.add('hidden');
+        waitingMsg.classList.remove('hidden');
+    }
+}
+
+function renderPlayerList(hostId) {
+    let listContainer = document.getElementById('player-list-display');
+    
+    // Create the container dynamically if it doesn't exist
+    if (!listContainer) {
+        listContainer = document.createElement('div');
+        listContainer.id = 'player-list-display';
+        listContainer.style.marginTop = '20px';
+        listContainer.style.display = 'flex';
+        listContainer.style.flexDirection = 'column';
+        listContainer.style.gap = '10px';
+        
+        // Insert it right beneath the color picker grid
+        const grid = document.getElementById('color-grid');
+        grid.parentNode.insertBefore(listContainer, grid.nextSibling);
+    }
+    
+    listContainer.innerHTML = ''; // Clear the old list
+    
+    for (let id in connectedPlayers) {
+        let p = connectedPlayers[id];
+        
+        let row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.justifyContent = 'center';
+        row.style.gap = '15px';
+        row.style.fontSize = '24px';
+        
+        // Draw their selected car color
+        let colorBox = document.createElement('div');
+        colorBox.style.width = '24px';
+        colorBox.style.height = '24px';
+        colorBox.style.backgroundColor = p.color;
+        colorBox.style.border = '2px solid #FFF';
+        
+        // Write their name and status tags
+        let nameText = document.createElement('span');
+        nameText.style.color = '#FFF';
+        
+        let tags = '';
+        if (id === hostId) tags += ' [HOST]';
+        if (id === myClientId) tags += ' (YOU)';
+        
+        nameText.innerText = `${p.name} ${tags}`;
+        
+        row.appendChild(colorBox);
+        row.appendChild(nameText);
+        listContainer.appendChild(row);
     }
 }
 
 function generateMultiplayerGrid() {
     playerObjects = {};
     
-    // Assign starting lanes based on join order (0 to 5)
+    // Sort client IDs alphabetically to guarantee 100% deterministic 
+    // lane assignment across all players' screens
+    const sortedIds = Object.keys(connectedPlayers).sort();
+    
     let laneAssignment = 0;
     
-    for (const clientId in connectedPlayers) {
+    for (const clientId of sortedIds) {
         let pData = connectedPlayers[clientId];
-        let pLane = laneAssignment % 3; // Stack them cleanly in the 3 lanes
+        let pLane = laneAssignment % 3; 
         
         let newPlayer = new Player(clientId, pData.name, pData.color, pLane);
         playerObjects[clientId] = newPlayer;
         
         if (clientId === myClientId) {
-            localPlayer = newPlayer; // Tag our local car for the controls
+            localPlayer = newPlayer; 
         }
         
         laneAssignment++;
