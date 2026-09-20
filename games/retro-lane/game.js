@@ -741,7 +741,9 @@ async function connectToAblyRoom(roomId) {
     // We will build this Vercel endpoint in Chunk 10.
     const authUrl = `https://retro-lane.vercel.app/api/ably-auth?room=${roomId}`;
     
-    ably = new Ably.Realtime({ authUrl: authUrl });
+    const sessionClientId = playerName + '_' + Math.floor(Math.random() * 100000);
+    
+    ably = new Ably.Realtime({ authUrl: authUrl, clientId: sessionClientId });
     
     ably.connection.on('connected', () => {
         console.log("🟢 Connected to Ably!");
@@ -749,6 +751,7 @@ async function connectToAblyRoom(roomId) {
         
         // Connect strictly to this room's channel
         roomChannel = ably.channels.get(`room:${roomId}`);
+
         
         // 1. Subscribe to Lobby Updates
         roomChannel.presence.subscribe('enter', handlePresenceUpdate);
