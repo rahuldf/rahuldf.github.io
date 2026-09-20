@@ -175,12 +175,17 @@ document.getElementById('racer-name-input').addEventListener('keypress', (e) => 
 });
 
 function saveNameHandler() {
-    const inputVal = document.getElementById('racer-name-input').value.trim().toUpperCase();
+    let inputVal = document.getElementById('racer-name-input').value.trim().toUpperCase();
+    // Strip everything except letters and numbers
+    inputVal = inputVal.replace(/[^A-Z0-9]/g, '');
+    
     if (inputVal.length > 0) {
         playerName = inputVal.substring(0, 10);
         localStorage.setItem('retroLaneName', playerName);
         updateMenuGreeting();
         if (nameCallback) nameCallback();
+    } else {
+        alert("Please enter alphanumeric characters only.");
     }
 }
 
@@ -397,13 +402,14 @@ class Player {
         this.lane = startingLane; this.targetLane = startingLane;
         
         this.baseY = canvas.height * 0.75;
-        
-        // Hardcoded ceiling so you don't boost off-screen
         this.minY = 20; 
         
         this.y = this.baseY + (startingLane * (canvas.height * 0.02)); 
         this.x = 0; 
-        this.penaltyTimer = 0; this.boostsLeft = 2; this.boostTimer = 0;
+        this.penaltyTimer = 0; 
+        this.boostsLeft = 2; 
+        this.boostTimer = 0;
+        this.boostsUsed = 0; // Anti-cheat verification counter
     }
 
     update() {
@@ -706,11 +712,23 @@ function gameLoop() {
         if (gameState === 'RACING') {
             let crossedPlayers = [];
             for (const id in playerObjects) {
-                if (playerObjects[id].y <= checkeredFlag.y + (flagHeight * 4)) crossedPlayers.push(playerObjects[id]);
+                if (playerObjects[id].y <= checkeredFlag.y + (flagHeight * 4)) {
+                    crossedPlayers.push(playerObjects[id]);
+                }
             }
             if (crossedPlayers.length > 0) {
                 crossedPlayers.sort((a, b) => a.y - b.y);
-                triggerWin(crossedPlayers[0]);
+                const winner = crossedPlayers[0];
+
+                if (currentRoomId === 'OFFLINE') {
+                    triggerWin(winner);
+                } else if (isHost && !winnerDeclared) {
+                    // Host decides the winner authoritatively
+                    roomChannel.publish('game-control', {
+                        action: 'FINISH',
+                        winnerId: winner.id
+                    });
+                }
             }
         }
     }
@@ -786,33 +804,50 @@ async function connectToAblyRoom(roomId) {
         // 2. Fetch players who are already in the room BEFORE entering presence
         roomChannel.presence.get((err, members) => {
             if (!err && members) {
+                // Validation 1: Hard Cap (6 Players)
+                if (members.length >= 6) {
+                    alert("Room is full! Maximum 6 players allowed.");
+                    ably.close();
+                    window.location.hash = '';
+                    showScreen('menu');
+                    return;
+                }
+
+                // Validation 2: Mid-Race Join Rejection
+                const hostMember = members.find(m => m.data && m.data.isHost);
+                if (hostMember && hostMember.data.roomState === 'RACING') {
+                    alert("A race is currently in progress in this room. Please try again later.");
+                    ably.close();
+                    window.location.hash = '';
+                    showScreen('menu');
+                    return;
+                }
+
                 const takenNames = [];
                 const takenColors = [];
                 
                 members.forEach(member => {
                     connectedPlayers[member.clientId] = member.data;
-                    takenNames.push(member.data.name.toUpperCase());
-                    takenColors.push(member.data.color);
+                    if (member.data && member.data.name) takenNames.push(member.data.name.toUpperCase());
+                    if (member.data && member.data.color) takenColors.push(member.data.color);
                 });
 
-                // Recursive function that won't let them in until they pick a unique name
                 const attemptEntry = () => {
                     if (takenNames.includes(playerName.toUpperCase())) {
                         showNamePrompt(() => {
-                            attemptEntry(); // Re-verify the new name they just typed
+                            attemptEntry();
                         }, `NAME '${playerName}' IS TAKEN! CHOOSE ANOTHER:`);
                     } else {
-                        // Auto-assign a safe color if their default is taken
                         if (takenColors.includes(selectedColor)) {
                             selectedColor = LOBBY_COLORS.find(c => !takenColors.includes(c)) || LOBBY_COLORS[0];
                         }
                         
-                        // 3. Name is safe! Announce ourselves to the room
                         roomChannel.presence.enter({
                             name: playerName,
                             color: selectedColor,
                             isHost: isHost,
-                            joinTime: myJoinTime
+                            joinTime: myJoinTime,
+                            roomState: 'LOBBY'
                         });
                         
                         updateLobbyUI();
@@ -828,6 +863,9 @@ async function connectToAblyRoom(roomId) {
             if (message.data.action === 'START') {
                 raceSeed = message.data.seed; 
                 generateMultiplayerGrid();
+            } else if (message.data.action === 'FINISH') {
+                const winner = playerObjects[message.data.winnerId];
+                if (winner) triggerWin(winner);
             }
         });
 
@@ -981,9 +1019,16 @@ function generateMultiplayerGrid() {
 function broadcastGameStart() {
     if (!roomChannel || !isHost) return;
     
-    // Generate a master seed so everyone gets the exact same obstacles
+    // Announce the race has started so new joiners get rejected
+    roomChannel.presence.update({
+        name: playerName,
+        color: selectedColor,
+        isHost: isHost,
+        joinTime: myJoinTime,
+        roomState: 'RACING'
+    });
+
     const masterSeed = Math.floor(Math.random() * 999999);
-    
     roomChannel.publish('game-control', {
         action: 'START',
         seed: masterSeed
@@ -994,14 +1039,48 @@ function broadcastGameStart() {
 // CHUNK 9: MULTIPLAYER NETCODE & SYNC
 // =========================================
 
+let lastMoveBroadcastTime = 0;
+
 function broadcastMovement() {
     if (!roomChannel || currentRoomId === 'OFFLINE' || !localPlayer) return;
 
+    // Rate-limit to prevent socket flooding and packet stutter
+    const now = Date.now();
+    if (now - lastMoveBroadcastTime < 60) return;
+    lastMoveBroadcastTime = now;
+
     roomChannel.publish('player-move', {
         targetLane: localPlayer.targetLane,
-        // We send our current Y coordinate to act as a soft anchor.
-        // If a player lags, this allows their phone to correct their opponent's position.
         y: localPlayer.y 
+    });
+}
+
+function setupNetworkListeners() {
+    roomChannel.subscribe('player-move', (message) => {
+        if (message.clientId === myClientId) return; 
+
+        let opponent = playerObjects[message.clientId];
+        if (opponent) {
+            opponent.targetLane = message.data.targetLane;
+            if (Math.abs(opponent.y - message.data.y) > 50) {
+                opponent.y = message.data.y;
+            }
+        }
+    });
+
+    roomChannel.subscribe('player-boost', (message) => {
+        if (message.clientId === myClientId) return; 
+
+        let opponent = playerObjects[message.clientId];
+        if (opponent) {
+            // Anti-cheat verification: max 2 boosts allowed
+            if (opponent.boostsUsed >= 2) return;
+            
+            opponent.boostsUsed++;
+            opponent.boostTimer = 30;
+            playSound('blip');
+            opponent.y = message.data.y;
+        }
     });
 }
 
@@ -1010,40 +1089,6 @@ function broadcastBoost() {
 
     roomChannel.publish('player-boost', {
         y: localPlayer.y
-    });
-}
-
-function setupNetworkListeners() {
-    // 1. Listen for opponent lane changes
-    roomChannel.subscribe('player-move', (message) => {
-        // Ignore the "echo" of our own broadcast
-        if (message.clientId === myClientId) return; 
-
-        let opponent = playerObjects[message.clientId];
-        if (opponent) {
-            opponent.targetLane = message.data.targetLane;
-            
-            // Anti-Desync: If network lag caused them to drift more than 50px from 
-            // where they actually are on their own screen, gently rubber-band them back.
-            if (Math.abs(opponent.y - message.data.y) > 50) {
-                opponent.y = message.data.y;
-            }
-        }
-    });
-
-    // 2. Listen for opponent boosts
-    roomChannel.subscribe('player-boost', (message) => {
-        if (message.clientId === myClientId) return; 
-
-        let opponent = playerObjects[message.clientId];
-        if (opponent) {
-            opponent.boostTimer = 30; // Trigger their boost animation locally
-            playSound('blip');
-            
-            // Hard sync their Y position so they get the exact distance advantage 
-            // on your screen that they earned on theirs.
-            opponent.y = message.data.y;
-        }
     });
 }
 
@@ -1065,3 +1110,25 @@ document.addEventListener('visibilitychange', () => {
         console.log(`⏱️ Caught up ${missedFrames} frames after tab restore.`);
     }
 });
+
+// --- AFK WATCHDOG (10 MIN TIMEOUT) ---
+const AFK_TIMEOUT_MS = 10 * 60 * 1000;
+let afkTimer = null;
+
+function resetAFKTimer() {
+    clearTimeout(afkTimer);
+    afkTimer = setTimeout(() => {
+        if (currentRoomId && currentRoomId !== 'OFFLINE') {
+            alert("Disconnected due to 10 minutes of inactivity.");
+            if (ably) ably.close();
+            window.location.hash = '';
+            window.location.reload();
+        }
+    }, AFK_TIMEOUT_MS);
+}
+
+['touchstart', 'mousedown', 'keydown'].forEach(evt => {
+    window.addEventListener(evt, resetAFKTimer, { passive: true });
+});
+
+resetAFKTimer();
