@@ -749,15 +749,10 @@ async function connectToAblyRoom(roomId) {
         console.log("🟢 Connected to Ably!");
         myClientId = ably.auth.clientId;
         
-        // Connect strictly to this room's channel
         roomChannel = ably.channels.get(`room:${roomId}`);
-
         
-        // 1. Subscribe to Lobby Updates
-        roomChannel.presence.subscribe('enter', handlePresenceUpdate);
-        roomChannel.presence.subscribe('leave', handlePresenceUpdate);
-        roomChannel.presence.subscribe('update', handlePresenceUpdate);
-        roomChannel.presence.subscribe('present', handlePresenceUpdate);
+        // 1. Subscribe to ALL Lobby Updates (This single line replaces the 4 separate subscribe lines)
+        roomChannel.presence.subscribe(handlePresenceUpdate);
         
         // 2. Announce ourselves to the room
         roomChannel.presence.enter({
@@ -766,15 +761,25 @@ async function connectToAblyRoom(roomId) {
             isHost: isHost 
         });
 
-        // 3. Listen for the Host starting the game
+        // 3. THE FIX: Fetch players who were already in the room before we joined!
+        roomChannel.presence.get((err, members) => {
+            if (!err && members) {
+                members.forEach(member => {
+                    connectedPlayers[member.clientId] = member.data;
+                });
+                updateLobbyUI();
+            }
+        });
+
+        // 4. Listen for the Host starting the game
         roomChannel.subscribe('game-control', (message) => {
             if (message.data.action === 'START') {
-                raceSeed = message.data.seed; // Synchronize the obstacle generation!
+                raceSeed = message.data.seed; 
                 generateMultiplayerGrid();
             }
         });
 
-        // 4. Activate in-race movement listeners (ADD THIS LINE)
+        // 5. Activate in-race movement listeners
         setupNetworkListeners();
     });
 
@@ -800,14 +805,9 @@ function updateLobbyUI() {
     // Refresh the color grid so taken colors are locked out
     renderColorGrid(); 
     
-    // Host Controls: Only allow start if there are at least 2 players
+    // Host Controls: Always show the start button for the host so you can test alone!
     if (isHost) {
-        const startBtn = document.getElementById('btn-start-race');
-        if (pCount > 1) {
-            startBtn.classList.remove('hidden');
-        } else {
-            startBtn.classList.add('hidden');
-        }
+        document.getElementById('btn-start-race').classList.remove('hidden');
     }
 }
 
