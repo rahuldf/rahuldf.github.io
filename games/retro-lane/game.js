@@ -739,8 +739,7 @@ async function connectToAblyRoom(roomId) {
     console.log(`🔌 Attempting to connect to room: ${roomId}...`);
     
     // We will build this Vercel endpoint in Chunk 10.
-    // For now, it's just a placeholder string.
-    const authUrl = `https://retro-lane.vercel.app/api/ably-auth`;
+    const authUrl = `https://retro-lane.vercel.app/api/ably-auth?room=${roomId}`;
     
     ably = new Ably.Realtime({ authUrl: authUrl });
     
