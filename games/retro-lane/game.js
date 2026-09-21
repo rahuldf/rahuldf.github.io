@@ -4,8 +4,22 @@
 
 // --- AUDIO SYSTEM (8-BIT SYNTH) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let isMuted = false;
+
+// Toggle Mute Button
+document.getElementById('btn-mute').addEventListener('click', (e) => {
+    isMuted = !isMuted;
+    e.target.innerText = isMuted ? '🔇' : '🔊';
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+});
+
+// Silently wakes up the audio engine on the user's very first screen tap
+document.addEventListener('pointerdown', () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}, { once: true });
 
 function playSound(soundName) {
+    if (isMuted) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const osc = audioCtx.createOscillator();
@@ -82,7 +96,7 @@ function generateRoomId() {
 
 // --- COLOR PICKER LOGIC ---
 const LOBBY_COLORS = ['#FF595E', '#FF924C', '#FFCA3A', '#8AC926', '#1982C4', '#6A4C93'];
-let selectedColor = '#FF595E'; // Default to Red
+let selectedColor = LOBBY_COLORS[Math.floor(Math.random() * LOBBY_COLORS.length)];
 
 function renderColorGrid() {
     const grid = document.getElementById('color-grid');
@@ -200,13 +214,20 @@ function initializeRouting() {
     const hash = window.location.hash.replace('#', '').trim().toUpperCase();
     
     if (hash.length === 5) {
-        console.log(`🔗 Invite link detected.`);
-        // Auto-fill the input but force them to click JOIN to unlock the AudioContext
-        document.getElementById('join-room-input').value = hash;
+        console.log(`🔗 Invite link detected. Auto-joining Room: ${hash}`);
+        
+        // Show the menu in the background temporarily so the UI has a canvas 
+        // to render over if the Name Prompt needs to intercept them.
+        showScreen('menu'); 
+        
+        // Push directly to the lobby sequence
+        requireName(() => {
+            joinRoom(hash);
+        });
+    } else {
+        showScreen('menu');
         window.history.replaceState(null, null, ' '); 
     }
-    
-    showScreen('menu');
 }
 
 function joinRoom(roomId) {
@@ -311,6 +332,17 @@ function handleInputRight(e) {
     }
 }
 
+function updateBoostUI() {
+    const btn = document.getElementById('btn-boost');
+    document.getElementById('boost-counter').innerText = `${localPlayer.boostsLeft}x`;
+    
+    if (localPlayer.boostsLeft <= 0) {
+        btn.classList.add('disabled');
+    } else {
+        btn.classList.remove('disabled');
+    }
+}
+
 function handleInputBoost(e) {
     if (e) e.preventDefault();
     if (gameState !== 'RACING' || !localPlayer) return;
@@ -319,8 +351,9 @@ function handleInputBoost(e) {
         localPlayer.boostsLeft--;
         localPlayer.boostTimer = 30; 
         playSound('blip');
-        document.getElementById('boost-counter').innerText = `${localPlayer.boostsLeft}x`;
-        broadcastMovement();
+        
+        updateBoostUI(); // NEW: Update the visual state
+        if (typeof broadcastBoost === 'function') broadcastBoost(); // Network broadcast
     }
 }
 
@@ -603,6 +636,18 @@ const ObstacleManager = {
     draw: function(ctx) { this.obstacles.forEach(obs => obs.draw(ctx)); }
 };
 
+function triggerScreenShake() {
+    const container = document.getElementById('app-container');
+    container.classList.add('shake-active');
+    
+    // Physical hardware vibration for mobile devices (200ms)
+    if (navigator.vibrate) navigator.vibrate(200); 
+    
+    setTimeout(() => {
+        container.classList.remove('shake-active');
+    }, 300);
+}
+
 function checkCollisions() {
     for (const id in playerObjects) {
         let p = playerObjects[id];
@@ -612,16 +657,31 @@ function checkCollisions() {
         for (let obs of ObstacleManager.obstacles) {
             let oLeft = obs.x; let oRight = obs.x + obs.width;
             let oTop = obs.y; let oBottom = obs.y + obs.height;
+            
             if (pRight > oLeft && pLeft < oRight && pBottom > oTop && pTop < oBottom) {
-                if (p.penaltyTimer === 0) { p.penaltyTimer = 90; playSound('crunch'); }
+                if (p.penaltyTimer === 0) { 
+                    p.penaltyTimer = 90; 
+                    playSound('crunch'); 
+                    
+                    // NEW: Only shake the screen if the local player crashes
+                    if (p === localPlayer) {
+                        triggerScreenShake();
+                    }
+                }
             }
         }
     }
 }
 
 function startCountdown() {
-    showScreen('game'); document.getElementById('countdown-layer').classList.remove('hidden');
+    showScreen('game');
+    document.getElementById('countdown-layer').classList.remove('hidden');
+    
+    window.scrollTo(0, 1);
+    
     let cdText = document.getElementById('countdown-text');
+
+    document.getElementById('btn-boost').classList.remove('disabled');
     document.getElementById('boost-counter').innerText = '2x';
     
     cdText.innerText = '3'; playSound('beepLow');
@@ -785,9 +845,11 @@ let myJoinTime = Date.now();
 async function connectToAblyRoom(roomId) {
     console.log(`🔌 Attempting to connect to room: ${roomId}...`);
     
-    // We will build this Vercel endpoint in Chunk 10.
-    const authUrl = `https://retro-lane.vercel.app/api/ably-auth?room=${roomId}`;
+    // 1. Show the loading overlay to hide the UI building process
+    const loader = document.getElementById('loading-overlay');
+    loader.classList.remove('hidden');
     
+    const authUrl = `https://retro-lane.vercel.app/api/ably-auth?room=${roomId}`;
     const sessionClientId = playerName + '_' + Math.floor(Math.random() * 100000);
     
     ably = new Ably.Realtime({ authUrl: authUrl, clientId: sessionClientId });
@@ -797,15 +859,13 @@ async function connectToAblyRoom(roomId) {
         myClientId = ably.auth.clientId;
         
         roomChannel = ably.channels.get(`room:${roomId}`);
-        
-        // 1. Subscribe to ALL Lobby Updates (This single line replaces the 4 separate subscribe lines)
         roomChannel.presence.subscribe(handlePresenceUpdate);
         
-        // 2. Fetch players who are already in the room BEFORE entering presence
         roomChannel.presence.get((err, members) => {
             if (!err && members) {
                 // Validation 1: Hard Cap (6 Players)
                 if (members.length >= 6) {
+                    loader.classList.add('hidden');
                     alert("Room is full! Maximum 6 players allowed.");
                     ably.close();
                     window.location.hash = '';
@@ -816,6 +876,7 @@ async function connectToAblyRoom(roomId) {
                 // Validation 2: Mid-Race Join Rejection
                 const hostMember = members.find(m => m.data && m.data.isHost);
                 if (hostMember && hostMember.data.roomState === 'RACING') {
+                    loader.classList.add('hidden');
                     alert("A race is currently in progress in this room. Please try again later.");
                     ably.close();
                     window.location.hash = '';
@@ -834,7 +895,11 @@ async function connectToAblyRoom(roomId) {
 
                 const attemptEntry = () => {
                     if (takenNames.includes(playerName.toUpperCase())) {
+                        // Hide loader temporarily so they can see the name prompt
+                        loader.classList.add('hidden');
                         showNamePrompt(() => {
+                            // Show loader again while we verify the new name
+                            loader.classList.remove('hidden');
                             attemptEntry();
                         }, `NAME '${playerName}' IS TAKEN! CHOOSE ANOTHER:`);
                     } else {
@@ -851,6 +916,8 @@ async function connectToAblyRoom(roomId) {
                         });
                         
                         updateLobbyUI();
+                        // 2. Hide the loading overlay! The lobby is fully synced and ready.
+                        loader.classList.add('hidden');
                     }
                 };
 
@@ -858,7 +925,6 @@ async function connectToAblyRoom(roomId) {
             }
         });
 
-        // 4. Listen for the Host starting the game
         roomChannel.subscribe('game-control', (message) => {
             if (message.data.action === 'START') {
                 raceSeed = message.data.seed; 
@@ -869,12 +935,15 @@ async function connectToAblyRoom(roomId) {
             }
         });
 
-        // 5. Activate in-race movement listeners
         setupNetworkListeners();
     });
 
     ably.connection.on('failed', () => {
+        // Hide loader and fallback on failure
+        document.getElementById('loading-overlay').classList.add('hidden');
         alert("Failed to connect to the multiplayer server. Check your connection.");
+        window.location.hash = '';
+        showScreen('menu');
     });
 }
 

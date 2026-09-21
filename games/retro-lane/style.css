@@ -24,10 +24,12 @@ body {
 }
 
 #app-container {
-    width: 100vw; height: 100vh;
-    max-width: 450px; /* Locks desktop width to a phone size */
+    width: 100vw; 
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamically resizes around the URL bar */
+    max-width: 450px; 
     position: relative;
-    background-color: #1A1A24; /* Actual game track background */
+    background-color: #1A1A24; 
     box-shadow: 0 0 30px rgba(0,0,0,0.8); 
     overflow: hidden;
 }
@@ -230,7 +232,8 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    max-height: 100vh;
+    max-height: 100vh; /* Fallback */
+    max-height: 100dvh; /* Dynamically resizes around the URL bar */
     aspect-ratio: 9 / 16;
     background: #1A1A24;
     z-index: 1;
@@ -389,6 +392,20 @@ body {
     margin: 5px 0;
 }
 
+/* --- LOADING SPINNER --- */
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(255, 184, 0, 0.2);
+    border-top-color: #FFB800;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* --- NAME PROMPT UI --- */
 #racer-name-input {
     font-family: 'VT323', monospace;
@@ -411,4 +428,45 @@ body {
 
 #menu-greeting:hover {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.btn-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.key-hint {
+    display: none; /* Hidden on mobile */
+    font-size: 18px;
+    color: #E2E8F0;
+    opacity: 0.6;
+    text-shadow: 1px 1px 0 #000;
+}
+
+/* Show hints only on desktop screens */
+@media (min-width: 500px) {
+    .key-hint {
+        display: block;
+    }
+}
+
+/* --- DISABLED BOOST BUTTON --- */
+.action-btn.disabled {
+    opacity: 0.4;
+    filter: grayscale(100%);
+    pointer-events: none; /* Prevents further tapping */
+}
+
+/* --- SCREEN SHAKE ANIMATION (COLLISION JUICE) --- */
+.shake-active {
+    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
 }

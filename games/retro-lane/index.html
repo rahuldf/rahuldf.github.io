@@ -13,6 +13,8 @@
 <body>
     <div id="app-container">
         
+        <button id="btn-mute" class="retro-btn small" style="position: absolute; top: 15px; left: 15px; z-index: 100; border: none; background: transparent; padding: 0;">🔊</button>
+        
         <!-- =========================================
              SCREEN 1: THE MAIN MENU
              ========================================= -->
@@ -81,9 +83,15 @@
             <!-- On-Screen Touch Controls -->
             <div id="touch-controls">
                 <!-- Left Side: D-Pad -->
-                <div class="control-zone left" style="flex-direction: row;">
-                    <button id="btn-left" class="touch-btn d-pad">◀</button>
-                    <button id="btn-right" class="touch-btn d-pad">▶</button>
+                <div class="control-zone left" style="flex-direction: row; gap: 15px;">
+                    <div class="btn-wrapper">
+                        <button id="btn-left" class="touch-btn d-pad">◀</button>
+                        <span class="key-hint">A / ◀</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button id="btn-right" class="touch-btn d-pad">▶</button>
+                        <span class="key-hint">D / ▶</span>
+                    </div>
                 </div>
                 
                 <!-- Right Side: Action -->
@@ -91,14 +99,21 @@
                     <div class="boost-container">
                         <span id="boost-counter">2x</span>
                         <button id="btn-boost" class="touch-btn action-btn">BOOST</button>
+                        <span class="key-hint">SHIFT / SPACE</span>
                     </div>
                 </div>
             </div>
 
             <!-- The 3-2-1 Countdown Overlay -->
-            <div id="countdown-layer" class="overlay hidden">
-                <div id="countdown-text">3</div>
+            
+            <div id="countdown-layer" class="overlay hidden" style="flex-direction: column;">
+            <div id="countdown-text">3</div>
+            <!-- NEW: Pre-Race Instructions -->
+            <div id="pre-race-hint" style="color: #E2E8F0; font-size: 24px; text-align: center; text-shadow: 2px 2px 0px #000; margin-top: 20px;">
+                DODGE BLOCKS.<br>USE BOOSTS CAREFULLY.
             </div>
+            </div>
+
         </div>
 
         <!-- =========================================
@@ -110,6 +125,14 @@
                 <span id="winner-name">PLAYER</span>
             </div>
             <button id="btn-return-menu" class="retro-btn primary" style="margin-top: 40px;">RETURN TO MENU</button>
+        </div>
+
+        <!-- =========================================
+             SCREEN: LOADING OVERLAY
+             ========================================= -->
+        <div id="loading-overlay" class="overlay hidden" style="z-index: 100; flex-direction: column; background: #1A1A24;">
+            <div class="spinner"></div>
+            <p style="color: #FFB800; font-size: 24px; margin-top: 20px;">CONNECTING TO LOBBY...</p>
         </div>
 
     </div>
